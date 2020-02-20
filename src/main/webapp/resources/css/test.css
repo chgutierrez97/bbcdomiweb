@@ -1,0 +1,42 @@
+
+thead {
+   background-color: #e7cdcd; 
+}
+
+tbody{ 
+
+	background-color: #fafafa; 
+ }
+
+table, th, td {
+  border: 20px ;
+  border-collapse: separate;
+  border-spacing:  5px;
+
+}
+
+/*select:hover {
+color: ##f3e3e3;
+background: #ddd;
+
+
+  background: rgba(247, 220,220, 0.3);
+ 
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}*/
+.contenedor{
+	text-align: center;
+	background:##f3e3e3;
+}
+
+.contenedor-lf{
+	text-align: left;
+	background:##f3e3e3;
+}
+
+.contenedor-rg{
+	text-align: right;
+	background:##f3e3e3;
+}
+
+

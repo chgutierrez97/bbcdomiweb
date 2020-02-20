@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="bcdomicPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>com.bbc.dom.bbcdomiweb.model.MgArchivosCopiadosUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcLogCupoComprometido</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgCargosClientes</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgProductosServicios</class>
+    <class>com.bbc.dom.bbcdomiweb.model.GmUtlLog</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgArchivosUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgCtasAfiliadasCreditosUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesOrdenantes</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgMotivoDevDomiciliaciones</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgParametroDomiciliaUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgArchivosConsolidadosUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcComisionesLog</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcComisiones</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcComisionesCuotasPlan</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDetArchiEmpresaDomici</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgCuentasAfiliadasDomicUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgParametroDomiciliaciones</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgRespuestasUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgCalendario</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDetArchivosDomiciliaUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgSubtipoCliente</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgTablas</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgConsumoRetiros</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgEmpresasAfiliadasUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgClientesPep</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgArchivosDomiciliaUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesRecibidas</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgLimitesRetirosTaq</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgArchivosCopiados</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcComisionesCuotas</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgAfiliacionesOrdenantes</class>
+    <class>com.bbc.dom.bbcdomiweb.model.GmMovimientosAnualDetalle2</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgMsnRechazoDomiciliaUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LcComisionesPagos</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgSubtipoDomiciliaUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgServiciosDomiciliacionUap</class>
+    <class>com.bbc.dom.bbcdomiweb.model.IbSumarioPagos</class>
+    <class>com.bbc.dom.bbcdomiweb.model.IbSumarioAfiliaciones</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgAfiliacionesPresentadas</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgAfiliacionesPresentadasPK</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesEnviadas</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesEnviadasPK</class>
+    <class>com.bbc.dom.bbcdomiweb.model.MgParametrosOrdenantes</class>
+    <class>com.bbc.dom.bbcdomiweb.model.IbMensajes</class>
+    <class>com.bbc.dom.bbcdomiweb.model.IbSesionDomiciliaciones</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <properties>
+      <!-- Desarrollo
+      <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@192.168.32.38:1521:NODOD"/>
+      <property name="javax.persistence.jdbc.user" value="BCDOMIC"/>
+      <property name="javax.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
+      <property name="javax.persistence.jdbc.password" value="bcdesa"/>-->
+      <!-- Calidad-->
+      <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@180.183.196.10:1521:NODOQ1"/>
+      <property name="javax.persistence.jdbc.user" value="BCDOMIC"/>
+      <property name="javax.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
+      <property name="javax.persistence.jdbc.password" value="Bancre1550"/>
+    </properties>
+  </persistence-unit>
+</persistence>
