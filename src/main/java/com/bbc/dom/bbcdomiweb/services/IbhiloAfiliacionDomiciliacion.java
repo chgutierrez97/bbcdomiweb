@@ -8,8 +8,11 @@ package com.bbc.dom.bbcdomiweb.services;
 import com.bbc.dom.bbcdomiweb.dto.IbAfiliacionesDetDTO;
 import com.bbc.dom.bbcdomiweb.dto.IbDomiciliacionesDetDTO;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioPagos;
+import com.bbc.dom.bbcdomiweb.util.Util;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,21 +28,21 @@ public class IbhiloAfiliacionDomiciliacion {
     private List<IbAfiliacionesDetDTO> listIbAfiliacionesDet;
     private List<IbDomiciliacionesDetDTO> listIbDomiciliacionesDet;
     private Boolean flag = Boolean.TRUE;
+    private final static Logger LOGGER = Logger.getLogger(IbhiloAfiliacionDomiciliacion.class.getName());
+    private static final String Success = "Success";
+    private static final String Fail = "Fail";
+    private Util util = new Util();
+    String clase = IbhiloAfiliacionDomiciliacion.class.getName();
 
     public IbhiloAfiliacionDomiciliacion(List<IbAfiliacionesDetDTO> listIbAfiliacionesDet, List<IbDomiciliacionesDetDTO> listIbDomiciliacionesDet, String opcion) {
-
         if (opcion.equals("AF")) {
-
             this.listIbAfiliacionesDet = new ArrayList<>();
             this.listIbAfiliacionesDet = listIbAfiliacionesDet;
-
         } else {
             flag = Boolean.FALSE;
             this.listIbDomiciliacionesDet = new ArrayList<>();
             this.listIbDomiciliacionesDet = listIbDomiciliacionesDet;
-
         }
-
     }
 
     public IbhiloAfiliacionDomiciliacion() {
@@ -50,18 +53,16 @@ public class IbhiloAfiliacionDomiciliacion {
         try {
             if (flag) {
                 if (ibAfiliacionesServices.procesarCarga(this.listIbAfiliacionesDet)) {
-                    System.out.println("Procceso de carga de afiliaciones culminado con excito ");
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de afiliaciones culminado con éxito ", "", clase));
                     Thread.currentThread().interrupt();
                 } else {
-                    System.out.println("  Falla en Procceso de carga de afiliaciones ");
                     Thread.currentThread().interrupt();
                 }
             } else {
                 if (ibDomiciliacionesServices.procesarCarga(this.listIbDomiciliacionesDet)) {
-                    System.out.println("Procceso de carga de domiciliaciones culminado con exto ");
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de domiciliaciones culminado con éxito ", "", clase));
                     Thread.currentThread().interrupt();
                 } else {
-                    System.out.println("  Falla en Procceso de carga de domiciliaciones ");
                     Thread.currentThread().interrupt();
                 }
 

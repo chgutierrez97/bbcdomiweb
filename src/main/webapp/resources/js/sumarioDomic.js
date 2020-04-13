@@ -70,9 +70,16 @@ $(document).ready(function () {
             type: "GET",
             url: "/bbcdomiweb/getSumarioDomicMasiva",
             success: function (data) {
+                var formatter = new Intl.NumberFormat('de-DE', {
+                minimumFractionDigits: 2
+                });
                 $("#sumarioDomicMasivo > tbody").html("");
-               
-                    var tds = '<tr><td>'+data.nombreDeArchivo+'</td><td>'+data.fechaString+'</td><td>'+data.numRegProcesados+'</td><td>'+data.numRegRechazados+'</td><td>'+data.numRegValidados+'</td><td>'+data.montoTotal+'</td></tr> ';
+                    var tds = '<tr><td style="border: hidden">'+data.nombreDeArchivo+'</td><td style="border: hidden">'
+                            +data.fechaString+'</td><td style="border: hidden">'
+                            +data.numRegProcesados+'</td><td style="border: hidden">'
+                            +data.numRegRechazados+'</td><td style="border: hidden">'
+                            +data.numRegValidados+'</td><td style="border: hidden">'
+                            +formatter.format(data.montoTotal)+'</td></tr> ';
                     $("#sumarioDomicMasivo").append(tds);
                     
                
@@ -95,6 +102,8 @@ $(document).ready(function () {
                 
             },
             error: function (e) {
+                $('#alertaSumario').show();
+                $("#alertaSumario").html("<strong> Nota: </strong>Hay algunos registros del archivo con errores <br>");
                 console.log("ERROR: ", e);
                 display(e);
             },

@@ -23,4 +23,6 @@ public interface DesencriptacionDao {
     
     public boolean mantenimientoSesion(SesionDTO sesion);
     
+    public void pruebaLog();
+    
 }

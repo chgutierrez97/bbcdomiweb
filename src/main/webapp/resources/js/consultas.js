@@ -6,7 +6,7 @@
 var json = "";
 var pag = 1;
 var totales = 0;
-var xPag = 10;
+var xPag = 9999999999999999;
 var nPag = 0;
 var offset = 0;
 var hasta = 0;
@@ -24,33 +24,38 @@ function mostrarLista(desde, hasta, opcion) {
 //             nroRegistrosPendientes
     for (var i = desde; i < hasta; i++) {
         var d = new Date(json[i].fechaHoraCarga);
+        var dia = d.getDate();
+        var mes = (d.getMonth()+1);
+        if(dia < 10){
+            dia = '0' + dia;
+        }
+        if(mes < 10){
+            mes = '0' + mes;
+        }
         var tds =
-                '<tr><td>' + d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + '</td><td>' +
-                json[i].nombreArchivo + '</td><td>' +
-                json[i].nroRegistrosProcesar + '</td><td>' +
-                json[i].nroRegistrosPendientes + '</td><td>' +
-                json[i].nroRegistrosValidados + '</td><td>' +
-                json[i].nroRegistrosRechazados + '</td><td bgcolor="#E5E5E5"><a id="' + json[i].id + '" class="fa fa-search" aria-hidden="true" style="color: #808080; cursor:pointer;"></a></td></tr> ';
+                '<tr><td style="border: hidden">' + dia + '/' + mes + '/' + d.getFullYear() + '</td><td style="border: hidden">' +
+                json[i].nombreArchivo + '</td><td style="border: hidden">' +
+                json[i].nroRegistrosProcesar + '</td><td style="border: hidden">' +
+                json[i].nroRegistrosPendientes + '</td><td style="border: hidden">' +
+                json[i].nroRegistrosValidados + '</td><td style="border: hidden">' +
+                json[i].nroRegistrosRechazados + '</td><td style="border: hidden" bgcolor="#f8f9fa"><a id="' + json[i].id + '" class="fa fa-search" aria-hidden="true" style="color: #808080; cursor:pointer;"></a></td></tr> ';
         if (opcion == 1) {
             $("#consulta-consolidado-afiliacion").append(tds);
         } else {
-            $("#consulta-consolidado-cobros").append(tds);           
+            $("#consulta-consolidado-cobros").append(tds);
         }
-    
+
     }
-    
+
 }
 function mostrarListaDet(desde, hasta, opcion) {
     var lista = '';
-
     if (hasta > totales) {
         hasta = totales
     }
     if (opcion == 1) {
         $("#detalle-afiliacion > tbody").html("");
         $("#detalle-afiliacion-print > tbody").html("");
-        
-
         for (var i = 0; i < json.length; i++) {
             var op = "";
             var codigoOperacion = "";
@@ -73,7 +78,8 @@ function mostrarListaDet(desde, hasta, opcion) {
                     json[i].nombrePagador + '</td><td>' +
                     json[i].cuentaPagador + '&nbsp' + '</td><td>' +
                     json[i].contrato + '</td><td>' +
-                    codigoOperacion + '</td></tr>';
+                    codigoOperacion + '</td><td>' +
+                    json[i].motivoRechazo + '</td></tr>';
             $("#detalle-afiliacion-print").append(tds);
         }
         for (var i = desde; i < hasta; i++) {
@@ -93,49 +99,47 @@ function mostrarListaDet(desde, hasta, opcion) {
 
             }
             var tds =
-                    '<tr class="first"><td>' + op + '</td><td>' +
-                    json[i].identificacionPagador + '</td><td>' +
-                    json[i].nombrePagador + '</td><td>' +
-                    json[i].cuentaPagador + '</td><td>' +
-                    json[i].contrato + '</td><td>' +
-                    codigoOperacion + '</td></tr>';
+                    '<tr class="first"><td style="border: hidden">' + json[i].tipoOperacion + '</td><td style="border: hidden">' +
+                    json[i].identificacionPagador + '</td><td style="border: hidden">' +
+                    json[i].nombrePagador + '</td><td style="border: hidden">' +
+                    json[i].cuentaPagador + '</td><td style="border: hidden">' +
+                    json[i].contrato + '</td><td style="border: hidden">' +
+                    codigoOperacion + '</td><tr>';
             $("#detalle-afiliacion").append(tds);
         }
     } else {
-
         $("#reporte-detalle-cobro > tbody").html("");
         $("#reporte-detalle-cobro-print > tbody").html("");
-        
+        var formatter = new Intl.NumberFormat('de-DE', {
+                minimumFractionDigits: 2
+                });
         for (var i = 0; i < json.length; i++) {
-            //var d = new Date(json[i].fechaFactura);
             var d1 = new Date();
-            var d=json[i].vencimiento
+            var d = json[i].vencimiento;
             var tds =
-                    '<tr class="first"><td>' + json[i].identificacionPagador + '</td><td>' +
-                    json[i].nombrePagador + '</td><td>' +
-                    json[i].cuentaPagador + '&nbsp' + '</td><td>' +
-                    json[i].monto + '</td><td>' +
-                    json[i].factura.substring(0, 20) + '&nbsp' + '</td><td>' +
-                    json[i].fechaCarga + '</td><td>' +
-                    d + '</td><td>' +
-                    json[i].codigoResultado + '</td></tr>';
+                    '<tr class="first"><td style="border: hidden">' + json[i].identificacionPagador + '</td><td style="border: hidden">' +
+                    json[i].nombrePagador + '</td><td style="border: hidden">' +
+                    json[i].cuentaPagador + '&nbsp' + '</td><td style="border: hidden">' +
+                    json[i].monto + '</td><td style="border: hidden">' +
+                    json[i].factura.substring(0, 20) + '&nbsp' + '</td><td style="border: hidden">' +
+                    json[i].fechaCarga + '</td><td style="border: hidden">' +
+                    d + '</td><td style="border: hidden">' +
+                    json[i].codigoResultado + '</td><td style="border: hidden">' +
+                    json[i].motivoRechazo + '</td></tr>';
             $("#reporte-detalle-cobro-print").append(tds);
         }
-        
+
         for (var i = desde; i < hasta; i++) {
-            //var d = new Date(json[i].fechaFactura);
             var d1 = new Date();
-            var d=json[i].vencimiento
-            
+            var d = json[i].vencimiento;
             var tds =
-                    '<tr class="first"><td>' + json[i].identificacionPagador + '</td><td>' +
-                    json[i].nombrePagador + '</td><td>' +
-                    json[i].cuentaPagador + '</td><td>' +
-                    json[i].monto + '</td><td>' +
-                    json[i].factura.substring(0, 20) + '</td><td>' +
-                    //d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + '</td><td>' +
-                    json[i].fechaCarga + '</td><td>' +
-                    d + '</td><td>' +
+                    '<tr class="first"><td style="border: hidden">' + json[i].identificacionPagador + '</td><td style="border: hidden">' +
+                    json[i].nombrePagador + '</td><td style="border: hidden">' +
+                    json[i].cuentaPagador + '</td><td style="border: hidden">' +
+                    formatter.format(json[i].monto) + '</td><td style="border: hidden">' +
+                    json[i].factura.substring(0, 20) + '</td><td style="border: hidden">' +
+                    json[i].fechaCarga + '</td><td style="border: hidden">' +
+                    d + '</td><td style="border: hidden">' +
                     json[i].codigoResultado + '</td></tr>';
             $("#reporte-detalle-cobro").append(tds);
         }
@@ -273,7 +277,7 @@ $(document).ready(function () {
                 $("#panelConsulta").hide();
                 $("#consultarAfiliacion").show();
                 $("#alert-error-file").hide();
-                $("#logo1").hide();
+            //    $("#logo1").hide();
                 $("#logo2").show();
                 break;
             case '2':
@@ -288,7 +292,7 @@ $(document).ready(function () {
                 $("#detalleAfiliacion").hide();
                 $("#panelConsulta").hide();
                 $("#alert-error-file").hide();
-                $("#logo1").hide();
+            //    $("#logo1").hide();
                 $("#logo2").show();
                 break;
             case '3':
@@ -314,7 +318,7 @@ $(document).ready(function () {
         event.preventDefault();
         idsele = $(this).attr("id");
         accion = $(this).attr("class")
-        
+
         if (accion != "fa-search") {
             detalleAfiliaciones(idsele);
             $("#consultarCobros").hide();
@@ -386,11 +390,11 @@ $(document).ready(function () {
                     hasta = pag * xPag;
                     mostrarListaDet(offset, hasta, 1);
                     if (nPag > 1) {
-                         if (nPag < 10) {
-                        mostrarBotones(nPag, 3);
-                    }else{
-                        mostrarBotones(10, 3);
-                    }
+                        if (nPag < 10) {
+                            mostrarBotones(nPag, 3);
+                        } else {
+                            mostrarBotones(nPag, 3);
+                        }
                     }
                     // Activar el primer botón
                     $('#botones2 button:first-child').addClass('active');
@@ -413,16 +417,11 @@ $(document).ready(function () {
 
                     $("#alert-warning-det-afi").html("<strong>Nota!</strong> En proceso de transmisi&oacute;n al BCV");
                     eliminarFila('detalle-afiliacion');
-
-
-
                 }
-
                 console.log("SUCCESS:-----> ", data.length);
             },
             error: function (e) {
                 console.log("ERROR: ", e);
-
             },
             done: function (e) {
                 console.log("DONE");
@@ -523,14 +522,8 @@ $(document).ready(function () {
                     offset = (pag - 1) * xPag;
                     hasta = pag * xPag;
                     mostrarListaDet(offset, hasta, 2);
-//                    if (nPag > 1) {
-                        if (nPag < 150) {
+                    if (nPag > 1) {
                         mostrarBotones(nPag, 4);
-//                    }else{
-//                        
-//                    }
-                        
-                        
                     }
                     // Activar el primer botón
                     $('#botones3 button:first-child').addClass('active');
@@ -547,10 +540,6 @@ $(document).ready(function () {
                             $(this).addClass('active');
                         });
                     }
-
-
-
-
                     $("#alert-warning-det-dom").hide();
                 } else {
 
@@ -605,13 +594,13 @@ $(document).ready(function () {
         a
 
         var pagActual = $(".first");
-        
+
 
     });
 
     $("#btnNexConAf").click(function (evt) {
         evt.preventDefault();
-        
+
 
     });
 

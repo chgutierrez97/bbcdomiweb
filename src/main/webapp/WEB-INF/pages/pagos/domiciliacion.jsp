@@ -9,18 +9,15 @@
    
     <div class="row" id="panelPpalDomi">
         <div class="col-lg-1"></div>
-        <div class="col-lg-10">
+        <div class="col-lg-10-led">
             <div id="accion-domiciliacion">
-
                 <div class="form-group">
-
-                    <select class="form-control" id="selectDomiciliacion" >
-                        <option value="0">Seleccione tipo de cobro</option>
+                    <select class="form-control list-led" id="selectDomiciliacion" >
+                        <option value="0">Seleccione tipo de Cobro</option>
                         <option value="1">Cobro Masivo</option>
                         <option value="2">Cobro individual</option>
                     </select>
                 </div>
-
             </div>     
         </div>
     </div>
@@ -28,7 +25,7 @@
     <div class="row" id="masivoPagos">  
         <div class="col-lg-1"></div>
         <div class="col-lg-11">
-            <h4 class="card-title text-left ">Carga Masiva Para Cobrar</h4>
+            <h5 class="card-title text-left ">Carga Masiva Para Cobrar</h5>
         </div>
         <br>
         <div class="col-lg-12">
@@ -36,7 +33,7 @@
             <div class="alert alert-success" id="alert-suc" style="display: none"></div>
             <div id="archivo-afiliacion">
                 <form method="POST" action="/bbcdomiweb/uploadDomiciliacion.htm" enctype="multipart/form-data">
-                    <div class="row">
+                    <div class="row list-led">
                         <div class="col-lg-1"></div>
                         <div class="col-lg-3">
                             <input id="fileDom" type="file" name="fileDomiciliacion"   required="true" onchange="return validarExtDom()"/>   
@@ -63,11 +60,11 @@
     
     <div class="row" id="manualDomiciliacion">
         <div class="col-lg-12">
-            <h4 class="card-title text-left ">Carga Individual Para Cobrar</h4>
+            <h5 class="card-title text-left ">Carga Individual Para Cobrar</h5>
         </div>
         <div class="col-lg-12">
             <div class="alert alert-danger" id="alert-reg-domi" style="display: none"></div>
-            <div id="cargaDataDomi"> 
+            <div id="cargaDataDomi" class="list-led"> 
                     <form id="regDomiciliacion" name="">
                         <div class="form-row">
                             <input id="tipoPagadorDomic"  value="N" type="hidden">
@@ -77,8 +74,8 @@
                             <input id="nombreBcoDestinoDomi"  value="D"  type="hidden">
                             
                             
-                            <div class="form-group col-md-1">
-                                <select id="tipoDocDomi"  required="true"  class="form-control">                                    
+                            <div class="form-group list-led">
+                                <select id="tipoDocDomi"  required="true"  class="form-control list-led">                                    
                                     <option selected value="V">V</option>
                                     <option value="E">E</option>
                                     <option value="J">J</option>
@@ -87,36 +84,36 @@
                                 </select>
                             </div>
                             <div class="form-group col-md-3">
-                                <input id="numIdentPagadorDomi" type="text" minlength="5" maxlength="12" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" class="form-control" required="true"  placeholder="Identificador Pagador">
+                                <input id="numIdentPagadorDomi" type="text" minlength="5" maxlength="12" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" class="form-control list-led" required="true"  placeholder="Identificador Pagador">
                             </div>
-                            <div class="form-group col-md-5">
-                                <input id="nombrePagadorDomi" type="text" class="form-control" maxlength="30" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" required="true"  placeholder="Nombre del Pagador" disabled="true">
+                            <div class="form-group col-md-4">
+                                <input id="nombrePagadorDomi" type="text" class="form-control list-led" maxlength="30" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" required="true"  placeholder="Nombre del Pagador" disabled="true">
                             </div>
                             <div class="form-group col-md-3">
-                                <input id="ctaBcoDestinoDomi" type="text"  required="true"  class="form-control" id="ctaBancoPagadot" maxlength="20" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" placeholder="Cuenta Pagador" disabled="true">
+                                <input id="ctaBcoDestinoDomi" type="text"  required="true"  class="form-control list-led" id="ctaBancoPagadot" maxlength="20" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" placeholder="Cuenta Pagador" disabled="true">
                             </div>
                         </div>
                         <div>
                             <br>
                             <h5 class="card-title text-left">Datos de la factura:</h5>      
-                            <br>
+                          
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-3">
                                 <label for="fechaEmisionDomi">Fecha Emisión</label>
-                                <input type="date" name='fechaEmisionDomi'  class="form-control" id="fechaEmisionDomi" >
+                                <input type="date" name='fechaEmisionDomi'  class="form-control list-led" id="fechaEmisionDomi" >
                             </div>
                             <div class="form-group col-md-3">
                                 <label for="fechaVctoDomi">Fecha Vencimiento</label>
-                                <input type="date" name='fechaVctoDomi' class="form-control" id="fechaVctoDomi">
+                                <input type="date" name='fechaVctoDomi' class="form-control list-led" id="fechaVctoDomi">
                             </div>
-                            <div class="form-group col-md-3" style="margin-top:32px;">
-                                <input  id="nroFacturaDomi" type="text" class="form-control" minlength="" maxlength="30"required="true"  placeholder="Contrato" disabled="true">
+                            <div class="form-group col-md-3" style="margin-top:29px;">
+                                <input  id="nroFacturaDomi" type="text" class="form-control list-led" minlength="" maxlength="30"required="true"  placeholder="Contrato" disabled="true">
                             </div>
-                            <div class="form-group col-md-2" style="margin-top:32px;">
-                                <input  id="montoDomi" tmontoDomiype="number" class="form-control" minlength="9" maxlength="20"required="true"  placeholder="Monto">
+                            <div class="form-group col-md-2" style="margin-top:29px;">
+                                <input  id="montoDomi" tmontoDomiype="number" class="form-control list-led" minlength="9" maxlength="20"required="true"  placeholder="Monto">
                             </div>
-                            <div id="agregarDomi" class="form-group col-md-1" style="margin-top:10px;">
+                            <div id="agregarDomi" class="form-group col-md-1" style="margin-top:7px;">
                                 <label for="btnAgregarDomi"></label> <br>
                                 <input type=image id="btnAgregarDomi"  src="resources/images/UI_2-512.png" title="AGREGAR" width="40px" height="40px">
                             </div>  
@@ -125,8 +122,8 @@
                     <hr>
             </div>  
      
-            <div class="table-wrapper-scroll-y my-custom-scrollbar">
-                <table class="table table-bordered table-striped mb-0" id="tableRegIndividualDomic" >
+            <div class="table-wrapper-scroll-y my-custom-scrollbar table-led">
+                <table class="table table-striped mb-0" id="tableRegIndividualDomic" >
                     <thead>
                         <tr style="text-align: center;">
                             <th scope="col">Pagador</th>
@@ -141,16 +138,15 @@
                     <tbody style="text-align: center;">
                     </tbody>
                 </table>
-               
             </div>
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-5">
                     
                 </div>
                 <div class="col-lg-3" id="tregister">
                     <label id="lbeTregs"></label>
                 </div>
-                <div class="col-lg-3" id="tMontoPro">
+                <div class="col-lg-4" id="tMontoPro">
                     <label id="lbeTmonto"></label>
                 </div>
                 

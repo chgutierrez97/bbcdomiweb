@@ -1,3 +1,4 @@
+var swMasivaD = 1;
 $(document).ready(function () {
     getListarDomiciliacionesTemp();
     $("#masivoPagos").hide();
@@ -7,8 +8,6 @@ $(document).ready(function () {
     $("#montoDomi").mask('000.000.000.000.000,00', {reverse: true});
     $("#lbeTmonto").mask('000.000.000.000.000,00', {reverse: true});
 
-
-
     getFechaHoy();
 
     $("#selectDomiciliacion").change(function () {
@@ -16,36 +15,26 @@ $(document).ready(function () {
         $("#masivoAfiliacion").hide();
         $("#manual-afiliacion").hide();
         $('#selectAfiliacion option:first').prop('selected', true);
-        
+
 
         switch ($("#selectDomiciliacion option:selected").val()) {
             case '1':
+                swMasivaD = 0;
                 $("#masivoPagos").show();
                 $("#manualDomiciliacion").hide();
                 $("#panelPpalDomi").hide();
-//                document.getElementById("home-tab").disabled = true;
-//                document.getElementById("profile-tab-consulta").disabled = true;
-                
-                $("#home-tab-af").hide();
-                $("#home-tab-pg").show();
-                $("#profile-tab-consulta").hide();
-                $("#home-tab-af-aux").show();
-                $("#profile-tab-consulta-aux").show();
                 $("#alert-error-file").hide();
-                 $("#logo2").hide();
-                $("#logo1").show();
+                $("#logo2").show();
                 break;
             case '2':
                 $("#masivoPagos").hide();
                 $("#manualDomiciliacion").show();
                 $("#panelPpalDomi").hide();
-//                document.getElementById("home-tab").disabled = true;
-//                document.getElementById("profile-tab-consulta").disabled = true;
                 $("#btn-1").hide();
                 $("#btn-2").hide();
                 $("#btn-3").hide();
                 $("#alert-error-file").hide();
-                 $("#logo1").hide();
+                $("#logo1").hide();
                 $("#logo2").show();
                 break;
             default:
@@ -93,7 +82,6 @@ $(document).ready(function () {
             search["tipoOperacion"] = $("input#tipoOperacion").val();
 
             if (validarFormulario()) {
-
                 $.ajax({
                     type: "POST",
                     contentType: "application/json",
@@ -102,32 +90,29 @@ $(document).ready(function () {
                     dataType: 'json',
                     timeout: 100000,
                     success: function (data) {
-
+                        var formatter = new Intl.NumberFormat('de-DE', {
+                            minimumFractionDigits: 2
+                        });
                         $("#tableRegIndividualDomic > tbody").html("");
                         $.each(data.list, function (i, item) {
-
-
                             var tds =
-                                    '<tr><td>' + item.tipoDoc + item.numIdentPagador + '</td><td>' +
-                                    item.nombrePagador + '</td><td>' +
-                                    item.ctaBcoDestino + '</td><td>' +
-                                    item.monto + '</td><td>' +
-                                    item.nroFactura + '</td><td>' +
-                                    item.fechaEmision + '</td><td>' +
-                                    item.fechaVcto + '</td><td>        <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>                     \n\
+                                    '<tr><td style="border: hidden">' + item.tipoDoc + item.numIdentPagador + '</td><td style="border: hidden">' +
+                                    item.nombrePagador + '</td><td style="border: hidden">' +
+                                    item.ctaBcoDestino + '</td><td style="border: hidden">' +
+                                    item.monto + '</td><td style="border: hidden">' +
+                                    item.nroFactura + '</td><td style="border: hidden">' +
+                                    item.fechaEmision + '</td><td style="border: hidden">' +
+                                    item.fechaVcto + '</td><td style="border: hidden">        <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>                     \n\
                                     <a id="' + item.id + '" title="Borrar"  class="fa fa-trash" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>          </td></tr> ';
                             $("#tableRegIndividualDomic").append(tds);
                         });
-                        //agregarFilas();
-                        console.log("SUCCESS: ", data);
-
                         if (data.numRegistros != 0) {
                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
+
                         } else {
                             document.getElementById('lbeTregs').innerHTML = '' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = '' + data.totalMontos;
-
+                            document.getElementById('lbeTmonto').innerHTML = '' + formatter.format(data.totalMontosString);
                         }
                     },
                     error: function (e) {
@@ -228,44 +213,44 @@ $(document).ready(function () {
     }
 
     function getListarDomiciliacionesTemp() {
-        //
         $.ajax({
-            type: "GET",
-            url: "/bbcdomiweb/getDomicTemp",
-            success: function (data) {
-                $("#tableRegIndividualDomic > tbody").html("");
-                $.each(data.list, function (i, item) {
-                    var tds =
-                            '<tr><td>' + item.tipoDoc + item.numIdentPagador + '</td><td>' +
-                            item.nombrePagador + '</td><td>' +
-                            item.ctaBcoDestino + '</td><td>' +
-                            item.monto + '</td><td>' +
-                            item.nroFactura + '</td><td>' +
-                            item.fechaEmision + '</td><td>' +
-                            item.fechaVcto + '</td><td>        <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>                     \n\
-                                    <a id="' + item.id + '" title="Borrar"  class="fa fa-trash" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>          </td></tr> ';
-                    $("#tableRegIndividualDomic").append(tds);
+        type: "GET",
+                url: "/bbcdomiweb/getDomicTemp",
+                success: function (data) {
+                var formatter = new Intl.NumberFormat('de-DE', {
+                minimumFractionDigits: 2
                 });
+                        $("#tableRegIndividualDomic > tbody").html("");
+                        $.each(data.list, function (i, item) {
+                        var tds =
+                                '<tr><td style="border: hidden">' + item.tipoDoc + item.numIdentPagador + '</td><td style="border: hidden">' +
+                                item.nombrePagador + '</td><td style="border: hidden">' +
+                                item.ctaBcoDestino + '</td><td style="border: hidden">' +
+                                item.monto + '</td><td style="border: hidden">' +
+                                item.nroFactura + '</td><td style="border: hidden">' +
+                                item.fechaEmision + '</td><td style="border: hidden">' +
+                                item.fechaVcto + '</td><td style="border: hidden">        <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>                     \n\
+                                    <a id="' + item.id + '" title="Borrar"  class="fa fa-trash" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>          </td></tr> ';
+                                $("#tableRegIndividualDomic").append(tds);
+                        });
+                        if (data.numRegistros != 0) {
+                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
+                        }
 
-                console.log("SUCCESS: ", data);
-                if (data.numRegistros != 0) {
-                    document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                    document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
-                }
+                },
+                        error: function (e) {
+                        console.log("ERROR: ", e);
+                                display(e);
+                        },
+                        done: function (e) {
+                        console.log("DONE");
+                                enableSearchButton(true);
+                        }
+                });
+        }
 
-            },
-            error: function (e) {
-                console.log("ERROR: ", e);
-                display(e);
-            },
-            done: function (e) {
-                console.log("DONE");
-                enableSearchButton(true);
-            }
-        });
-
-    }
-    function getFechaHoy() {
+        function getFechaHoy() {
         //
         $.ajax({
             type: "GET",
@@ -334,7 +319,7 @@ $(document).ready(function () {
 
         if (opcion == 'V' || opcion == 'E' || opcion == 'P') {
             $("#tipoPagadorDomic").val("N");
-        } else if (opcion == 'J' || opcion == 'P') {
+        } else if (opcion == 'J' || opcion == 'G') {
             $("#tipoPagadorDomic").val("J");
         } else {
             $("#tipoPagadorDomic").val("");
@@ -479,7 +464,6 @@ $(document).ready(function () {
     });
 
     function buscarAfiliadoByNumDoc(numIdentificador) {
-        //v408401495
         $.ajax({
             type: 'GET',
             contentType: "application/json",
@@ -493,7 +477,8 @@ $(document).ready(function () {
                     $("input#ctaBcoDestinoDomi").val(data.ctaBcoDestino);
                     $("input#codBcoDestinoDomi").val(data.codBcoDestino.split("-")[0]);
                     $("input#nombreBcoDestinoDomi").val(data.codBcoDestino.split("-")[1]);
-                    $("input#nroFacturaDomi").val(data.refContrato);;
+                    $("input#nroFacturaDomi").val(data.refContrato);
+                    ;
                     $("#alert-reg-domi").hide();
                 } else {
                     $("#alert-reg-domi").show();
@@ -502,18 +487,4 @@ $(document).ready(function () {
             }
         });
     }
-
-//    $("#montoDomi").on({
-//        "focus": function (event) {
-//            $(event.target).select();
-//        },
-//        "keyup": function (event) {
-//            $(event.target).val(function (index, value) {
-//                return value.replace(/\D/g, "")
-//                        .replace(/([0-9])([0-9]{2})$/, '$1,$2')
-//                        .replace(/\B(?=(\d{3})+(?!\d)\.?)/g, ".");
-//            });
-//        }
-//    });
-
 });

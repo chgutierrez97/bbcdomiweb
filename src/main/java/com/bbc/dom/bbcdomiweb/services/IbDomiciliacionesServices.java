@@ -20,10 +20,13 @@ import com.bbc.dom.bbcdomiweb.repository.DomiciliacionRepository;
 import com.bbc.dom.bbcdomiweb.repository.SumarioPagosRepository;
 import com.bbc.dom.bbcdomiweb.util.Util;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -33,16 +36,22 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Christian Gutierrez
+ * @author Ledwin Belén
  */
 @Service
 public class IbDomiciliacionesServices extends Util {
 
     EntityManagerFactory emf = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em = emf.createEntityManager();
-    
+
     EntityManagerFactory emf1 = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em1 = emf1.createEntityManager();
+
+    private final static Logger LOGGER = Logger.getLogger(IbDomiciliacionesServices.class.getName());
+    private static final String Success = "Success";
+    private static final String Fail = "Fail";
+    private Util util = new Util();
+    String clase = IbDomiciliacionesServices.class.getName();
 
     public synchronized Boolean procesarCarga(List<IbDomiciliacionesDetDTO> domiciliacionesList) {
         Boolean flag = Boolean.TRUE;
@@ -52,11 +61,11 @@ public class IbDomiciliacionesServices extends Util {
 
         int i = 0;
         try {
-            StringBuilder consultaNextval = new StringBuilder();  // VERIFICAR
-            consultaNextval.append("select BCRECER.MG_S_DOMICILIACIONES_ORD.nextval from dual"); // VERIFICAR
-            BigDecimal secuencia = (BigDecimal) em1.createNativeQuery(consultaNextval.toString()).getSingleResult();
-            Long nextval = secuencia.longValue();
+            StringBuilder consultaNextval = new StringBuilder();
+            consultaNextval.append("select BCRECER.MG_S_DOMICILIACIONES_ORD.nextval from dual");
             for (IbDomiciliacionesDetDTO domiciliacion : domiciliacionesList) {
+                BigDecimal secuencia = (BigDecimal) em1.createNativeQuery(consultaNextval.toString()).getSingleResult();
+                Long nextval = secuencia.longValue();
                 MgDomiciliacionesOrdenantes domiciliacioni = new MgDomiciliacionesOrdenantes();
                 MgDomiciliacionesOrdenantesPK domicPK = new MgDomiciliacionesOrdenantesPK();
                 domicPK.setCodigoOrdenante(Integer.valueOf(domiciliacion.getCodOrdenante()));
@@ -67,21 +76,22 @@ public class IbDomiciliacionesServices extends Util {
                     domiciliacioni.setSituacion("C");
                 } else {
                     domiciliacioni.setSituacion("R");
+                    domiciliacioni.setMotivoRechazo(domiciliacion.getErrorInLine());
                 }
                 domiciliacioni.setMgDomiciliacionesOrdenantesPK(domicPK);
                 domiciliacioni.setOrigenCarga("W");
                 domiciliacioni.setUsuarioCarga("BCDOMIC");
-                domiciliacioni.setSecuencia(nextval); // VERIFICAR
-//                domiciliacioni.setSecuenciaLote(domiciliacion.getCodLote()); Verificar
+                domiciliacioni.setSecuencia(nextval);
                 domiciliacioni.setGrupo(domiciliacion.getCodLote());
-                System.out.println("Num--> " + ++i);
                 dr.create(domiciliacioni);
-                nextval++;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Domiciliaciones", e.getMessage(), clase));
             flag = Boolean.FALSE;
 
+        }
+        if (flag) {
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de Domiciliaciones exitoso", "", clase));
         }
         return flag;
     }
@@ -89,7 +99,6 @@ public class IbDomiciliacionesServices extends Util {
     public Date BuscarFechaValida() {
         MgCalendario a = new MgCalendario();
         String var = "BCC";
-
         try {
             StringBuilder consulta = new StringBuilder();
             consulta.append("SELECT m FROM MgCalendario m ");
@@ -99,9 +108,8 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("codigoAplicacion", var)
                     .getSingleResult();
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgCalendario", e.getMessage(), clase));
         }
-
         return a.getFechaHoy();
     }
 
@@ -110,9 +118,7 @@ public class IbDomiciliacionesServices extends Util {
         SumarioPagosRepository sp = new SumarioPagosRepository();
         sp.setEntityManager(em);
         try {
-            //flag = sp.create(sumarioPagos).getId();
             IbSumarioPagos name = (IbSumarioPagos) sp.crearPJ(sumarioPagos).getObjet();
-
             StringBuilder consulta = new StringBuilder();
             IbSumarioPagos sumarioPag = new IbSumarioPagos();
             consulta.append(" SELECT b FROM IbSumarioPagos b ");
@@ -125,7 +131,7 @@ public class IbDomiciliacionesServices extends Util {
                     .getSingleResult();
             flag = sumarioPag.getId();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
         }
         return flag;
     }
@@ -141,9 +147,8 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("codigoOrdenante", codOrdenante)
                     .getResultList();
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
         }
-
         return ibSumarioPagos;
     }
 
@@ -192,7 +197,7 @@ public class IbDomiciliacionesServices extends Util {
                         .getResultList();
             }
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesOrdenantes", e.getMessage(), clase));
         }
         return mgDomiciliacionesOrdenantes;
     }
@@ -207,76 +212,73 @@ public class IbDomiciliacionesServices extends Util {
             StringBuilder consulta = new StringBuilder();
             consulta.append(" SELECT b FROM MgDomiciliacionesOrdenantes b ");
             consulta.append(" WHERE   b.grupo = :numeroLote");
-//            consulta.append(" WHERE   b.secuenciaLote = :numeroLote"); Verificar
             mgDomiciliacionesOrdenantes = (List<MgDomiciliacionesOrdenantes>) em.createQuery(consulta.toString())
                     .setParameter("numeroLote", numLote)
                     .getResultList();
 
-        } catch (Exception e) {
-            throw e;
-        }
+            for (MgDomiciliacionesOrdenantes mgDomiciliacionesOrdenante : mgDomiciliacionesOrdenantes) {
+                String linea = mgDomiciliacionesOrdenante.getMgDomiciliacionesOrdenantesPK().getRegistro();
+                DetalleDomiciliacionesDTO detDomic = new DetalleDomiciliacionesDTO();
+                detDomic.setCodigoResultado("" + mgDomiciliacionesOrdenante.getCodigoRechazo());
+                detDomic.setIdentificacionPagador(linea.substring(61, 73).trim());
+                detDomic.setNombrePagador(linea.substring(73, 103).trim());
+                detDomic.setCuentaPagador(linea.substring(25, 45));
+                detDomic.setMonto(linea.substring(45, 60));
+                String nunFac = linea.substring(103, 133); // Ahora se envia el número de contrato
 
-        for (MgDomiciliacionesOrdenantes mgDomiciliacionesOrdenante : mgDomiciliacionesOrdenantes) {
-            String linea = mgDomiciliacionesOrdenante.getMgDomiciliacionesOrdenantesPK().getRegistro();
-            DetalleDomiciliacionesDTO detDomic = new DetalleDomiciliacionesDTO();
-            detDomic.setCodigoResultado("" + mgDomiciliacionesOrdenante.getCodigoRechazo());
-            detDomic.setIdentificacionPagador(linea.substring(61, 73).trim());
-            detDomic.setNombrePagador(linea.substring(73, 103).trim());
-            detDomic.setCuentaPagador(linea.substring(25, 45));
-            detDomic.setMonto(linea.substring(45, 60));
-            String nunFac = linea.substring(103, 133); // Ahora se envia el número de contrato
-
-            detDomic.setFactura(nunFac);
-            detDomic.setEmision(linea.substring(153, 161));
-            String dateVencimiento = linea.substring(161, 169);
-            dateVencimiento = dateVencimiento.substring(0, 2) + "/" + dateVencimiento.substring(2, 4) + "/" + dateVencimiento.substring(4, 8);
-            detDomic.setVencimiento(dateVencimiento);
-            detDomic.setDescripcion("");
-            detDomic.setSituacion(mgDomiciliacionesOrdenante.getSituacion());
-            detDomic.setCobroExitoso("www");
-            detDomic.setFechaCarga(getFechaMod3(mgDomiciliacionesOrdenante.getFechaCarga()));
-            detalleDomiciliacionesDTO.add(detDomic);
-        }
-        detalleDomiciliacionesDTOAux = this.BuscarDomiciliacionesEnviadas(numLote);
-        boolean sw = false;
-        if (detalleDomiciliacionesDTOAux.size() > 0) {
-            for (DetalleDomiciliacionesDTO detalleDomiciliaciones : detalleDomiciliacionesDTO) {
-                for (DetalleDomiciliacionesDTO detalleAfiliacionesDTOAux : detalleDomiciliacionesDTOAux) {
-                    if (detalleDomiciliaciones.getIdentificacionPagador().equalsIgnoreCase(detalleAfiliacionesDTOAux.getIdentificacionPagador()) && detalleDomiciliaciones.getMonto().equalsIgnoreCase(detalleAfiliacionesDTOAux.getMonto())) {
-                        data.add(detalleAfiliacionesDTOAux);
-                        sw = true;
-                        break;
-                    }
-                }
-                if (sw == false) {
-                    data.add(detalleDomiciliaciones);
-                }
-                sw = false;
+                detDomic.setFactura(nunFac);
+                detDomic.setEmision(linea.substring(153, 161));
+                String dateVencimiento = linea.substring(161, 169);
+                dateVencimiento = dateVencimiento.substring(0, 2) + "/" + dateVencimiento.substring(2, 4) + "/" + dateVencimiento.substring(4, 8);
+                detDomic.setVencimiento(dateVencimiento);
+                detDomic.setDescripcion("");
+                detDomic.setSituacion(mgDomiciliacionesOrdenante.getSituacion());
+                detDomic.setCobroExitoso("www");
+                detDomic.setFechaCarga(getFechaMod3(mgDomiciliacionesOrdenante.getFechaCarga()));
+                detDomic.setMotivoRechazo(mgDomiciliacionesOrdenante.getMotivoRechazo() == null ? "" : mgDomiciliacionesOrdenante.getMotivoRechazo());
+                detalleDomiciliacionesDTO.add(detDomic);
             }
-        } else {
-            data.addAll(detalleDomiciliacionesDTO);
+            detalleDomiciliacionesDTOAux = this.BuscarDomiciliacionesEnviadas(numLote);
+            boolean sw = false;
+            if (detalleDomiciliacionesDTOAux.size() > 0) {
+                for (DetalleDomiciliacionesDTO detalleDomiciliaciones : detalleDomiciliacionesDTO) {
+                    for (DetalleDomiciliacionesDTO detalleAfiliacionesDTOAux : detalleDomiciliacionesDTOAux) {
+                        if (detalleDomiciliaciones.getIdentificacionPagador().equalsIgnoreCase(detalleAfiliacionesDTOAux.getIdentificacionPagador()) && detalleDomiciliaciones.getMonto().equalsIgnoreCase(detalleAfiliacionesDTOAux.getMonto())) {
+                            data.add(detalleAfiliacionesDTOAux);
+                            sw = true;
+                            break;
+                        }
+                    }
+                    if (sw == false) {
+                        data.add(detalleDomiciliaciones);
+                    }
+                    sw = false;
+                }
+            } else {
+                data.addAll(detalleDomiciliacionesDTO);
+            }
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar Domiciliaciones por lote", e.getMessage(), clase));
         }
-
         return data;
     }
-    
-    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesEnviadas(Long numLote){
+
+    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesEnviadas(Long numLote) {
         List<MgDomiciliacionesEnviadas> mgDomiciliacionesEnviadas = null;
         List<DetalleDomiciliacionesDTO> detalleDomiciliacionesDTO = new ArrayList<>();
         try {
             StringBuilder consulta = new StringBuilder();
             consulta.append(" SELECT b FROM MgDomiciliacionesEnviadas b ");
             consulta.append(" WHERE  b.grupo = :secuenciaLote");
-//            consulta.append(" WHERE  b.secuenciaLote = :secuenciaLote");Verificar
-  
+
             mgDomiciliacionesEnviadas = (List<MgDomiciliacionesEnviadas>) em.createQuery(consulta.toString())
                     .setParameter("secuenciaLote", numLote)
                     .getResultList();
 
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesEnviadas", e.getMessage(), clase));
         }
-        
+
         for (MgDomiciliacionesEnviadas domiciliacionesEnviadas : mgDomiciliacionesEnviadas) {
 
             String linea = domiciliacionesEnviadas.getRegistroOrdenante();
@@ -297,9 +299,10 @@ public class IbDomiciliacionesServices extends Util {
             detDomic.setSituacion(domiciliacionesEnviadas.getAplicadoUap());
             detDomic.setCobroExitoso(domiciliacionesEnviadas.getCobroExitoso());
             detDomic.setFechaCarga(getFechaMod3(domiciliacionesEnviadas.getFechaCreacion()));
+            detDomic.setMotivoRechazo(domiciliacionesEnviadas.getCodigoError() == null ? "" : domiciliacionesEnviadas.getCodigoError());
             detalleDomiciliacionesDTO.add(detDomic);
         }
-        return detalleDomiciliacionesDTO; 
+        return detalleDomiciliacionesDTO;
     }
 
     public String getFechaMod3(Date fecha) {
@@ -325,47 +328,32 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("nombreArchivo", nombreArchivo)
                     .getResultList();
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
         }
-
         return ibSumarioPagos;
     }
 
     public List<ConsolidadoDomiciliacionesDTO> ListarConsolidadosDedominciliaciones(int codOrdenante) {
-
         List<ConsolidadoDomiciliacionesDTO> consolidadoDomiciliacionesDTO = new ArrayList<>();;
-
         try {
             // Ordenantes
             StringBuilder consulta = new StringBuilder();
-            /*consulta.append("select  * from (SELECT distinct  p.id, p.fecha_hora_carga AS FECHA_HORA_CARGA,p.nombre_archivo AS NOMBRE_ARCHIVO,p.nro_registros_procesar AS NRO_REGISTROS_PROCESAR, ");
-            consulta.append("(SELECT COUNT(1) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.secuencia_lote =p.id  and (p.situacion='X' or p.situacion='R')) NRO_REGISTROS_RECHAZADOS , ");
-            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.secuencia_lote =p.id  and p.situacion='P') NRO_REGISTROS_VALIDADOS, ");
-            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.secuencia_lote =p.id  and p.situacion='C') NRO_REGISTROS_PENDIENTES  ");
-            consulta.append("FROM  ib_sumario_pagos p where p.codigo_ordenante=" + codOrdenante + " ORDER BY p.fecha_hora_carga desc ) x where x.NRO_REGISTROS_RECHAZADOS!=0 or x.NRO_REGISTROS_VALIDADOS!=0 or x.NRO_REGISTROS_PENDIENTES!=0");*/
-
             consulta.append("select  * from (SELECT distinct  p.id, p.fecha_hora_carga AS FECHA_HORA_CARGA,p.nombre_archivo AS NOMBRE_ARCHIVO,p.nro_registros_procesar AS NRO_REGISTROS_PROCESAR, ");
-            consulta.append("(SELECT COUNT(1) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and (p.situacion='X' or p.situacion='R') and p.CODIGO_ORDENANTE = " +codOrdenante+ ") NRO_REGISTROS_RECHAZADOS , ");
-            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and p.situacion='P' and p.CODIGO_ORDENANTE = " +codOrdenante+ ") NRO_REGISTROS_VALIDADOS, ");
-            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and p.situacion='C' and p.CODIGO_ORDENANTE = " +codOrdenante+ ") NRO_REGISTROS_PENDIENTES  ");
+            consulta.append("(SELECT COUNT(1) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and (p.situacion='X' or p.situacion='R') and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_RECHAZADOS , ");
+            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and p.situacion='P' and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_VALIDADOS, ");
+            consulta.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_ordenantes p where p.grupo = p.id  and p.situacion='C' and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_PENDIENTES  ");
             consulta.append("FROM  ib_sumario_pagos p where p.codigo_ordenante=" + codOrdenante + " ORDER BY p.fecha_hora_carga desc ) x where x.NRO_REGISTROS_RECHAZADOS!=0 or x.NRO_REGISTROS_VALIDADOS!=0 or x.NRO_REGISTROS_PENDIENTES!=0");
-         
+
             Query q = em.createNativeQuery(consulta.toString());
 
             // Enviadas
             StringBuilder consulta2 = new StringBuilder();
-            /*consulta2.append("select * from (SELECT distinct  p.id, p.fecha_hora_carga AS FECHA_HORA_CARGA,p.nombre_archivo AS NOMBRE_ARCHIVO,p.nro_registros_procesar AS NRO_REGISTROS_PROCESAR, ");
-            consulta2.append("null NRO_REGISTROS_RECHAZADOS, ");
-            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.secuencia_lote =p.id and ((p.aplicado_uap = 'P') or (p.aplicado_uap = 'K' and p.cobro_exitoso = 'SI') or (p.aplicado_uap = 'O' and p.cobro_exitoso = 'SI'))) NRO_REGISTROS_VALIDADOS, ");
-            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.secuencia_lote =p.id  and ((p.aplicado_uap = 'O' and p.cobro_exitoso = null))) NRO_REGISTROS_PENDIENTES  ");
-            consulta2.append("FROM  ib_sumario_pagos p where p.codigo_ordenante=" + codOrdenante + " ORDER BY p.fecha_hora_carga desc ) x where x.NRO_REGISTROS_RECHAZADOS!=0 or x.NRO_REGISTROS_VALIDADOS!=0 or x.NRO_REGISTROS_PENDIENTES!=0");*/
-
             consulta2.append("select * from (SELECT distinct  p.id, p.fecha_hora_carga AS FECHA_HORA_CARGA,p.nombre_archivo AS NOMBRE_ARCHIVO,p.nro_registros_procesar AS NRO_REGISTROS_PROCESAR, ");
-            consulta2.append("null NRO_REGISTROS_RECHAZADOS, ");
-            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.grupo = p.id and ((p.aplicado_uap = 'P') or (p.aplicado_uap = 'K' and p.cobro_exitoso = 'SI') or (p.aplicado_uap = 'O' and p.cobro_exitoso = 'SI')) and p.CODIGO_ORDENANTE = " +codOrdenante+ ") NRO_REGISTROS_VALIDADOS, ");
-            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.grupo = p.id  and ((p.aplicado_uap = 'O' and p.cobro_exitoso = null)) and p.CODIGO_ORDENANTE = " +codOrdenante+ ") NRO_REGISTROS_PENDIENTES  ");
+            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.grupo = p.id and (p.aplicado_uap = 'O' and p.cobro_exitoso = 'N') and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_RECHAZADOS, ");
+            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.grupo = p.id and ((p.aplicado_uap = 'P') or (p.aplicado_uap = 'K' and p.cobro_exitoso = 'S') or (p.aplicado_uap = 'O' and p.cobro_exitoso = 'S')) and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_VALIDADOS, ");
+            consulta2.append("(SELECT COUNT(*) FROM BCRECER.mg_domiciliaciones_enviadas p where p.grupo = p.id  and ((p.aplicado_uap = 'O' and p.cobro_exitoso = null)) and p.CODIGO_ORDENANTE = " + codOrdenante + ") NRO_REGISTROS_PENDIENTES  ");
             consulta2.append("FROM  ib_sumario_pagos p where p.codigo_ordenante=" + codOrdenante + " ORDER BY p.fecha_hora_carga desc ) x where x.NRO_REGISTROS_RECHAZADOS!=0 or x.NRO_REGISTROS_VALIDADOS!=0 or x.NRO_REGISTROS_PENDIENTES!=0");
-          
+
             Query q2 = em.createNativeQuery(consulta2.toString());
 
             try {
@@ -379,23 +367,17 @@ public class IbDomiciliacionesServices extends Util {
                         Object[] objectArrayE = (Object[]) enviadas;
                         consolDomic = new ConsolidadoDomiciliacionesDTO();
                         if (objectArrayO[0].toString().equals(objectArrayE[0].toString()) && objectArrayO[2].toString().equals(objectArrayE[2].toString())) {
-                            System.out.println(objectArrayE[0]);
                             BigDecimal c = (BigDecimal) objectArrayE[0];
                             consolDomic.setId(c.longValue());
-                            System.out.println(objectArrayE[1]);
                             consolDomic.setFechaHoraCarga((Date) objectArrayE[1]);
-                            System.out.println(objectArrayE[2]);
                             consolDomic.setNombreArchivo((String) objectArrayE[2]);
-                            System.out.println(objectArrayE[3]);
                             BigDecimal c1 = (BigDecimal) objectArrayE[3];
                             consolDomic.setNroRegistrosProcesar(c1.toBigInteger());
-                            System.out.println(objectArrayE[4]);
-                            BigDecimal c2 = (BigDecimal) objectArrayO[4];
-                            consolDomic.setNroRegistrosRechazados(c2.toBigInteger());
-                            System.out.println(objectArrayO[5]);
+                            BigDecimal c2O = (BigDecimal) objectArrayO[4];
+                            BigDecimal c2E = (BigDecimal) objectArrayE[4];
+                            consolDomic.setNroRegistrosRechazados(c2O.toBigInteger().add(c2E.toBigInteger()));
                             BigDecimal c3 = (BigDecimal) objectArrayE[5];
                             consolDomic.setNroRegistrosValidados(c3.toBigInteger());
-                            System.out.println(objectArrayE[6]);
                             BigDecimal c4 = (BigDecimal) objectArrayE[6];
                             consolDomic.setNroRegistrosPendientes(c4.toBigInteger());
                             consolidadoDomiciliacionesDTO.add(consolDomic);
@@ -404,23 +386,16 @@ public class IbDomiciliacionesServices extends Util {
                         }
                     }
                     if (sw == false) {
-                        System.out.println(objectArrayO[0]);
                         BigDecimal c = (BigDecimal) objectArrayO[0];
                         consolDomic.setId(c.longValue());
-                        System.out.println(objectArrayO[1]);
                         consolDomic.setFechaHoraCarga((Date) objectArrayO[1]);
-                        System.out.println(objectArrayO[2]);
                         consolDomic.setNombreArchivo((String) objectArrayO[2]);
-                        System.out.println(objectArrayO[3]);
                         BigDecimal c1 = (BigDecimal) objectArrayO[3];
                         consolDomic.setNroRegistrosProcesar(c1.toBigInteger());
-                        System.out.println(objectArrayO[4]);
                         BigDecimal c2 = (BigDecimal) objectArrayO[4];
                         consolDomic.setNroRegistrosRechazados(c2.toBigInteger());
-                        System.out.println(objectArrayO[5]);
                         BigDecimal c3 = (BigDecimal) objectArrayO[5];
                         consolDomic.setNroRegistrosValidados(c3.toBigInteger());
-                        System.out.println(objectArrayO[6]);
                         BigDecimal c4 = (BigDecimal) objectArrayO[6];
                         consolDomic.setNroRegistrosPendientes(c4.toBigInteger());
                         consolidadoDomiciliacionesDTO.add(consolDomic);
@@ -428,41 +403,11 @@ public class IbDomiciliacionesServices extends Util {
                     }
                     sw = false;
                 }
-
-                /*    List r = q.getResultList();
-                Object O[] = null;
-                for (int i = 0; i < r.size(); i++) {
-                    ConsolidadoDomiciliacionesDTO consolDomic = new ConsolidadoDomiciliacionesDTO();
-                    Object obj = r.get(i);
-                    Object[] objectArray = (Object[]) obj;
-
-                    System.out.println(objectArray[0]);
-                    BigDecimal c = (BigDecimal) objectArray[0];
-                    consolDomic.setId(c.longValue());
-                    System.out.println(objectArray[1]);
-                    consolDomic.setFechaHoraCarga((Date) objectArray[1]);
-                    System.out.println(objectArray[2]);
-                    consolDomic.setNombreArchivo((String) objectArray[2]);
-                    System.out.println(objectArray[3]);
-                    BigDecimal c1 = (BigDecimal) objectArray[3];
-                    consolDomic.setNroRegistrosProcesar(c1.toBigInteger());
-                    System.out.println(objectArray[4]);
-                    BigDecimal c2 = (BigDecimal) objectArray[4];
-                    consolDomic.setNroRegistrosRechazados(c2.toBigInteger());
-                    System.out.println(objectArray[5]);
-                    BigDecimal c3 = (BigDecimal) objectArray[5];
-                    consolDomic.setNroRegistrosValidados(c3.toBigInteger());
-                    System.out.println(objectArray[6]);
-                    BigDecimal c4 = (BigDecimal) objectArray[6];
-                    consolDomic.setNroRegistrosPendientes(c4.toBigInteger());
-                    consolidadoDomiciliacionesDTO.add(consolDomic);
-                }*/
             } catch (Exception e) {
-                e.printStackTrace();
-
+                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase));
             }
         } catch (Exception e) {
-            throw e;
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase));
         }
         return consolidadoDomiciliacionesDTO;
     }

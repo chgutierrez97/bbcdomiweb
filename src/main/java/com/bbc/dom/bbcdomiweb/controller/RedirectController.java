@@ -22,7 +22,6 @@ ModelAndView mv = new ModelAndView();
         
 	@RequestMapping("/home")	
 	public ModelAndView redirectHome(){		
-		
 		mv.setViewName("main/home");
                 String a = HomeDao.construirRuta("hfdsgjfhgjsdghds");
 		return mv;
@@ -30,9 +29,7 @@ ModelAndView mv = new ModelAndView();
 	}
         @RequestMapping("/error")	
 	public ModelAndView redirectHerror(){		
-		
 		mv.setViewName("main/error");
-                System.out.println("error");
                 String a = HomeDao.construirRuta("hfdsgjfhgjsdghds");
 		return mv;
 		

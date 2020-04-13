@@ -23,6 +23,7 @@ public class DetalleDomiciliacionesDTO {
      private String situacion;
      private String fechaCarga;
      private String cobroExitoso;
+     private String motivoRechazo;
 
     public DetalleDomiciliacionesDTO() {
     }
@@ -133,6 +134,14 @@ public class DetalleDomiciliacionesDTO {
 
     public void setCobroExitoso(String cobroExitoso) {
         this.cobroExitoso = cobroExitoso;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
     }
 
     @Override

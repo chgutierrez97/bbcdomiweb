@@ -41,13 +41,13 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "MgAfiliacionesOrdenantes.findByMotivoRechazo", query = "SELECT m FROM MgAfiliacionesOrdenantes m WHERE m.motivoRechazo = :motivoRechazo")
     , @NamedQuery(name = "MgAfiliacionesOrdenantes.findByCodigoRechazo", query = "SELECT m FROM MgAfiliacionesOrdenantes m WHERE m.codigoRechazo = :codigoRechazo")})
 
-@SequenceGenerator(
+/*@SequenceGenerator(
     name="MgSAfiliacionesOrd",
    // sequenceName = "MG_S_AFILIACIONES_ORD",
     sequenceName = "MG_S_GRUPO_AFILIACION",
     initialValue = 1, 
     allocationSize = 10
-)
+)*/
 public class MgAfiliacionesOrdenantes implements Serializable {
 
     @Column(name = "CODIGO_ORDENANTE")
@@ -68,7 +68,7 @@ public class MgAfiliacionesOrdenantes implements Serializable {
 //    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MgSAfiliacionesOrd")
     private Long secuencia;
     @Column(name = "ELEMENTO_GRUPO")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MgSAfiliacionesOrd")
+  //  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MgSAfiliacionesOrd")
     private Long elementoGrupo;
     @Size(max = 1)
     @Column(name = "SITUACION")

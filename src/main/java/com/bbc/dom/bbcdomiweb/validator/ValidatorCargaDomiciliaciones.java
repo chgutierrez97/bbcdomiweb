@@ -105,22 +105,18 @@ public class ValidatorCargaDomiciliaciones {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "VE")) {
                     errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato");
                     flag = Boolean.FALSE;
-                    System.out.println("sis R");
                     nroRechazo = "212";
                 }
             } else if (resultadoValidatorTipoPagador.contains("J")) {
-                if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "J")) {
+                if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "J") && !elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "G")) {
                     errorInLine.append("Campo Detalle Tipo Pagador Juridico que no aplica formato");
                     flag = Boolean.FALSE;
-                    System.out.println("sis J");
                     nroRechazo = "212";
                 }
             } else if (resultadoValidatorTipoPagador.contains("G")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "G")) {
-
                     errorInLine.append("Campo Detalle Tipo Pagador Gubernamental que no aplica formato");
                     flag = Boolean.FALSE;
-                    System.out.println("sis G");
                 }
             }
 

@@ -1,3 +1,4 @@
+var swMasivaA = 1;
 $(document).ready(function () {
     getListarAfiliaTemp();
     validacionArchivo();
@@ -46,17 +47,12 @@ $(document).ready(function () {
         switch ($("#selectAfiliacion option:selected").val()) {
 
             case '1':
+                swMasivaA = 0;
                 $("#masivoAfiliacion").show();
                 $("#manual-afiliacion").hide();
                 $("#panelPpalAfil").hide();
-                $("#home-tab-af").show();
-                $("#home-tab-pg").hide();
-                $("#profile-tab-consulta").hide();
-                $("#home-tab-pg-aux").show();
-                $("#profile-tab-consulta-aux").show();
                 $("#alert-error-file").hide();
-                $("#logo2").hide();
-                $("#logo1").show();
+                $("#logo2").show();
 
 
                 break;
@@ -64,18 +60,10 @@ $(document).ready(function () {
                 $("#masivoAfiliacion").hide();
                 $("#manual-afiliacion").show();
                 $("#panelPpalAfil").hide();
-                $("#home-tab-af").hide();
-                $("#home-tab-pg").hide();
-                $("#profile-tab-consulta").hide();
-                $("#home-tab-af-aux").hide();
-                $("#home-tab-pg-aux").hide();
-                $("#profile-tab-consulta-aux").hide();
                 $("#alert-error-file").hide();
                 $("#logo1").hide();
                 $("#logo2").show();
                 clearCargaAfiDom();
-
-
                 break;
 
             default:
@@ -162,7 +150,12 @@ $(document).ready(function () {
                     success: function (data) {
                         $("#tableRegIndividual > tbody").html("");
                         $.each(data, function (i, item) {
-                            var tds = '<tr><td>' + item.nameTipoOperacion + '</td><td>' + item.tipoDoc + item.numIdentPagador + '</td><td>' + item.nombrePagador + '</td><td>' + item.nameBcoDestino + '</td><td>' + item.ctaBcoDestino + '</td><td>' + item.refContrato + '</td><td>   <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>  <a id="' + item.id + '"  title="Borrar" class="fa fa-trash" aria-hidden="true"  style="color: #666666; cursor:pointer;"></a> </td></tr> ';
+                            var tds = '<tr><td style="border: hidden">' + item.nameTipoOperacion + '</td><td style="border: hidden">' 
+                                    + item.tipoDoc + item.numIdentPagador + '</td><td style="border: hidden">' 
+                                    + item.nombrePagador + '</td><td style="border: hidden">' 
+                                    + item.nameBcoDestino + '</td><td style="border: hidden">' 
+                                    + item.ctaBcoDestino + '</td><td style="border: hidden">' + item.refContrato 
+                                    + '</td><td style="border: hidden">   <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a>  <a id="' + item.id + '"  title="Borrar" class="fa fa-trash" aria-hidden="true"  style="color: #666666; cursor:pointer;"></a> </td></tr> ';
                             $("#tableRegIndividual").append(tds);
                         });
                         //agregarFilas();
@@ -330,7 +323,12 @@ $(document).ready(function () {
             success: function (data) {
                 $("#tableRegIndividual > tbody").html("");
                 $.each(data, function (i, item) {
-                    var tds = '<tr><td>' + item.nameTipoOperacion + '</td><td>' + item.tipoDoc + item.numIdentPagador + '</td><td>' + item.nombrePagador + '</td><td>' + item.nameBcoDestino + '</td><td>' + item.ctaBcoDestino + '</td><td>' + item.refContrato + '</td><td>   <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a> <a id="' + item.id + '"  title="Borrar" class="fa fa-trash" aria-hidden="true"  style="color: #666666; cursor:pointer;"></a> </td></tr> ';
+                    var tds = '<tr><td style="border: hidden">' + item.nameTipoOperacion + '</td><td style="border: hidden">' 
+                            + item.tipoDoc + item.numIdentPagador + '</td><td style="border: hidden">' 
+                            + item.nombrePagador + '</td><td style="border: hidden">' 
+                            + item.nameBcoDestino + '</td><td style="border: hidden">' 
+                            + item.ctaBcoDestino + '</td><td style="border: hidden">' 
+                            + item.refContrato + '</td><td style="border: hidden">   <a id="' + item.id + '" title="Editar" class="fa fa-pencil" aria-hidden="true" style="color: #666666; cursor:pointer;"></a> <a id="' + item.id + '"  title="Borrar" class="fa fa-trash" aria-hidden="true"  style="color: #666666; cursor:pointer;"></a> </td></tr> ';
                     $("#tableRegIndividual").append(tds);
                 });
 
@@ -489,7 +487,7 @@ $(document).ready(function () {
         $("#btn-search").prop("disabled", flag);
     }
     function display(data) {
-        var json = "<h4>Ajax Response</h4><pre>"
+        var json = "<h5>Ajax Response</h5><pre>"
                 + JSON.stringify(data, null, 4) + "</pre>";
         $('#feedback').html(json);
     }

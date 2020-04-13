@@ -1,34 +1,30 @@
 <%-- 
     Document   : uploadAfiliacion
     Created on : 19/03/2019, 04:44:21 PM
-    Author     : Christian Gutierrez
+    Author     : Ledwin Belén
 --%>
 
 <div class="container"   id="afiliaciones">
     <br>
-
     <div class="row" id="panelPpalAfil">
         <div class="col-lg-1"></div>
-        <div class="col-lg-10">
+        <div class="col-lg-10-led">
             <div id="accion-afiliacion">
-
                 <div class="form-group">
-
-                    <select class="form-control " id="selectAfiliacion" >
+                    <select class="form-control list-led" id="selectAfiliacion" >
                         <option value="0" selected="true">Seleccione tipo de Afiliación</option>
                         <option value="1">Carga Masiva</option>
                         <option value="2">Carga Individual</option>
-
                     </select>
                 </div>
             </div>     
         </div>
     </div>
 
-    <div class="row" id="masivoAfiliacion">
-         <div class="col-lg-1"></div>
+    <div class="row" id="masivoAfiliacion" style="display: none">
+        <div class="col-lg-1"></div>
         <div class="col-lg-11">
-            <h4 class="card-title text-left ">Carga Masiva Para Afiliar</h4>
+            <h5 class="card-title text-left ">Carga Masiva Para Afiliar</h5>
         </div>
         <br>
         <div class="col-lg-12">
@@ -37,13 +33,13 @@
 
             <div id="archivo-afiliacion">
                 <form method="POST" action="/bbcdomiweb/uploadAfiliacion.htm" enctype="multipart/form-data">
-                    <div class="row">
+                    <div class="row list-led">
                         <div class="col-lg-1"></div>
                         <div class="col-lg-3">
                             <input id="fileAli" type="file" name="fileAfiliacion" required="true" onchange="return validarExtAfi()"  />
                         </div>
-                     </div>
-                    
+                    </div>
+
                     <br>
                     <br>
                     <div class="row">
@@ -62,9 +58,9 @@
         </div>
     </div>
     <br>
-    <div class="row" id="manual-afiliacion">
+    <div class="row" id="manual-afiliacion" style="display: none">
         <div class="col-lg-12">
-            <h4 class="card-title text-left ">Carga Individual Para Afiliar</h4>
+            <h5 class="card-title text-left ">Carga Individual Para Afiliar</h5>
         </div>
 
         <div class="col-lg-12">
@@ -77,13 +73,13 @@
                             <div class="form-row">
                                 <div class="form-group col-md-3">
 
-                                    <select id="tipoOperacion"  required="true"  class="form-control">
+                                    <select id="tipoOperacion"  required="true"  class="form-control list-led">
                                         <option selected value="A-Afiliación">Afiliar</option>
                                         <option value="D-Desafiliación">Desafiliar</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-md-1">
-                                    <select id="tipoDoc"  required="true"  class="form-control">                                    
+                                <div class="form-group">
+                                    <select id="tipoDoc"  required="true"  class="form-control list-led">                                    
                                         <option selected value="V">V</option>
                                         <option value="E">E</option>
                                         <option value="P">P</option>
@@ -94,15 +90,15 @@
                                 <input id="tipoPagador" type="hidden">
                                 <input id="claveOrdenante" type="hidden">
                                 <div class="form-group col-md-3">
-                                    <input id="numIdentPagador" type="text" minlength="5" maxlength="11" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" class="form-control" required="true"  placeholder="Identificador Pagador">
+                                    <input id="numIdentPagador" type="text" minlength="5" maxlength="11" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" class="form-control list-led" required="true"  placeholder="Identificador Pagador">
                                 </div>
-                                <div class="form-group col-md-5">
-                                    <input id="nombrePagador" type="text" class="form-control" maxlength="30" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" required="true"  placeholder="Nombre del Pagador">
+                                <div class="form-group col-md-4">
+                                    <input id="nombrePagador" type="text" class="form-control list-led" maxlength="30" oninput="if(this.value.length > this.maxLength ) this.value = this.value.slice(0, this.maxLength);" required="true"  placeholder="Nombre del Pagador">
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-3">
-                                    <select id="codBcoDestino" required="true"  class="form-control">
+                                    <select id="codBcoDestino" required="true"  class="form-control list-led">
                                         <option value="0156">100%BANCO</option>
                                         <option value="0172">BANCAMIGA BANCO MICROFINANCIERO, C.A.</option>
                                         <option value="0171">BANCO ACTIVO BANCO COMERCIAL, C.A.</option>
@@ -133,21 +129,16 @@
                                     </select>
                                 </div>
                                 <div class="form-group col-md-5">
-                                    <input id="ctaBcoDestino" type="text"  required="true"  class="form-control" id="ctaBancoPagadot" maxlength="20" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" placeholder="Cuenta Pagador">
+                                    <input id="ctaBcoDestino" type="text"  required="true"  class="form-control list-led" id="ctaBancoPagadot" maxlength="20" oninput="if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" placeholder="Cuenta Pagador">
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <input  id="refContrato" type="text" class="form-control" minlength="1" maxlength="30" required="true"  placeholder="Contrato">
+                                    <input  id="refContrato" type="text" class="form-control list-led" minlength="1" maxlength="30" required="true"  placeholder="Contrato">
                                 </div>
                                 <div id="angree" class="form-group col-md-1">
                                     <input type=image id="btnOk"  src="resources/images/UI_2-512.png" title="Agregar Registro" width="40px" height="40px">
                                 </div>
 
                             </div>
-
-
-
-
-
                         </form>
 
                         <hr>
@@ -155,31 +146,24 @@
                 </div>
 
             </div>     
-            <div class=" my-custom-scrollbar">
-                <table class="table table-bordered table-striped " id="tableRegIndividual" >
+            <div class=" my-custom-scrollbar table-led">
+                <table class="table table-borde-led table-striped " id="tableRegIndividual" >
                     <thead>
                         <tr style="text-align: center;">
-
                             <th scope="col">Operación</th>
                             <th scope="col">Pagador</th>
                             <th scope="col">Nombre del Pagador</th>
                             <th scope="col">Banco Destino</th>
                             <th scope="col">Nro. de Cta. Pagador</th>
                             <th scope="col">Contrato</th>
-
                         </tr>
                     </thead>
                     <tbody style="text-align: center;">
-
-
                     </tbody>
                 </table>
-
-
             </div>
             <br>
             <br>
-
 
             <div class="row">
                 <div class="col-lg-1"></div>

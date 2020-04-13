@@ -47,6 +47,7 @@
     <class>com.bbc.dom.bbcdomiweb.model.MgParametrosOrdenantes</class>
     <class>com.bbc.dom.bbcdomiweb.model.IbMensajes</class>
     <class>com.bbc.dom.bbcdomiweb.model.IbSesionDomiciliaciones</class>
+    <class>com.bbc.dom.bbcdomiweb.model.LogDomic</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <!-- Desarrollo

@@ -27,6 +27,7 @@ import com.bbc.dom.bbcdomiweb.services.IbAfiliacionesServices;
 import com.bbc.dom.bbcdomiweb.services.IbDomiciliacionesServices;
 import com.bbc.dom.bbcdomiweb.services.IbhiloAfiliacionDomiciliacion;
 import com.bbc.dom.bbcdomiweb.util.GeneradorClaveOrdenante;
+import com.bbc.dom.bbcdomiweb.util.Util;
 import com.bbc.dom.bbcdomiweb.validator.FileValidator;
 import com.bbc.dom.bbcdomiweb.validator.ValidatorCargaAfiliaciones;
 import com.bbc.dom.bbcdomiweb.validator.ValidatorCargaDomiciliaciones;
@@ -143,7 +144,7 @@ public class UploadController {
     private List<IbSumarioAfiliaciones> listIbSumarioAfiliaciones = new ArrayList<>();
     private List<ConsolidadoAfiliacionesDTO> listConsolidadoAfiliaciones = new ArrayList<>();
     private SumarioCargaMasivaDTO sumAfiliaMasive;
-    private String codigoOrdenante = "0001";
+    private String codigoOrdenante = "null";
     private Boolean FlagArchivo = Boolean.TRUE;
 
     private int id = 0;
@@ -152,6 +153,12 @@ public class UploadController {
     private int totalPagSumDom = 0;
     private int totalPagDetAfi = 0;
     private int totalPagDetDom = 0;
+
+    private final static Logger LOGGER = Logger.getLogger(UploadController.class.getName());
+    private static final String Success = "Success";
+    private static final String Fail = "Fail";
+    private Util util = new Util();
+    String clase = UploadController.class.getName();
 
     public List<IbSumarioPagos> getListIbSumarioPagos() {
         return listIbSumarioPagos;
@@ -327,7 +334,6 @@ public class UploadController {
                 }
                 String monto = formDomiciliacion.getMonto().replaceAll("[,.]", "");
                 String linea = this.codigoOrdenante.trim() + claveOrdenante + agregarEspacio(claveOrdenante, LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + "020001" + formDomiciliacion.getCtaBcoDestino() + agregarCeros(monto, LONGITUD_DETALLE_DOM_MONTO) + monto + formDomiciliacion.getTipoPagador() + formDomiciliacion.getTipoDoc() + formDomiciliacion.getNumIdentPagador() + agregarEspacio(formDomiciliacion.getTipoDoc() + formDomiciliacion.getNumIdentPagador(), LONGITUD_NUMERO_PAGADOR) + formDomiciliacion.getNombrePagador().trim() + agregarEspacio(formDomiciliacion.getNombrePagador().trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + formDomiciliacion.getRefContrato() + agregarEspacio(formDomiciliacion.getRefContrato(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + agregarCeros("", LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + formDomiciliacion.getFechaEmision().replace("/", "") + formDomiciliacion.getFechaVcto().replace("/", "");
-                System.out.println(linea);
                 domiciliacion.setNombrePagador(nombre);
                 domiciliacion.setLinea(linea);
                 domiciliacion.setRefContrato(linea);
@@ -339,7 +345,7 @@ public class UploadController {
                 sumarioPagos.setCodigoOrdenante(Long.valueOf(this.codigoOrdenante));
                 sumarioPagos.setEstatusCargar(0L);
                 sumarioPagos.setFechaHoraCarga(new Date());
-                SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+                SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
                 String fechaHora = ((new Date()).getTime() + "");
                 String nombreDinamicoArchivo2 = "DO_" + this.codigoOrdenante + "_" + formatter.format(new Date()) + "_M_" + fechaHora.subSequence((fechaHora.length() - 4), fechaHora.length());
                 sumarioPagos.setNombreArchivo(nombreDinamicoArchivo2);
@@ -383,17 +389,18 @@ public class UploadController {
                     });
                     clearCargaAfiDom();
                 }
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Guardado correctamente en el Temp de domiciliacion", "", clase));
 
             } else {
                 respuesta.setCodigo("001");
                 respuesta.setDescripcion("Error, no hay data para guardar.");
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay data para guardar en el Temp de domiciliacion", "", clase));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             respuesta.setCodigo("001");
             respuesta.setDescripcion("Error en servicio de afiliacion individual en linea. ");
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se guardó correctamente en el Temp de domiciliacion", e.getMessage(), clase));
         }
-
         return respuesta;
     }
 
@@ -447,103 +454,104 @@ public class UploadController {
                 String link10 = ("" + q.getCell(10)).trim();
                 String link11 = ("" + q.getCell(11)).trim();
                 String link12 = ("" + q.getCell(12)).trim();
+                link5 = link5.replace(",", ".");
+                String[] mo = link5.split("\\.");
+                if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty()
+                        && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty() && !link9.isEmpty() && !link10.isEmpty() && !link11.isEmpty() && !link12.isEmpty()) {
+                    tregisTotal++;
+                    newDomi.setCodOrdenante(link0);
+                    newDomi.setClaveOrdenente(link1);
+                    newDomi.setTipoOperacion(link2);
+                    newDomi.setSubTipoDominio(link3);
+                    newDomi.setCtaPagador(link4);
+                    newDomi.setMonto(mo[0]);
+                    newDomi.setTipoPagador(link6);
+                    newDomi.setIdentificadorPagador(link7);
+                    newDomi.setNombrePagador(link8);
+                    newDomi.setRefContrato(link9);
+                    newDomi.setFacturaNumero(link10);
+                    newDomi.setFechaEmisionFactura(link11);
+                    newDomi.setFechaVencimientoFactura(link12);
+                    newDomi.setFechaCargar(new Date());
+                    newDomi.setIdAfi(1);
+                    newDomi.setCodUsuarioCarga(123);
+                    newDomi.setLinea("");
 
-                newDomi.setCodOrdenante(link0);
-                newDomi.setClaveOrdenente(link1);
-                newDomi.setTipoOperacion(link2);
-                newDomi.setSubTipoDominio(link3);
-                newDomi.setCtaPagador(link4);
-                newDomi.setMonto(link5);
-                newDomi.setTipoPagador(link6);
-                newDomi.setIdentificadorPagador(link7);
-                newDomi.setNombrePagador(link8);
-                newDomi.setRefContrato(link9);
-                newDomi.setFacturaNumero(link10);
-                newDomi.setFechaEmisionFactura(link11);
-                newDomi.setFechaVencimientoFactura(link12);
-                newDomi.setFechaCargar(new Date());
-                newDomi.setIdAfi(1);
-                newDomi.setCodUsuarioCarga(123);
-                newDomi.setLinea("");
+                    String nombre = link8;
+                    int iterator;
+                    String espacio = "";
+                    if ((nombre.length() > 5) && (nombre.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
+                        iterator = 0;
+                        StringBuffer errorInLine = new StringBuffer();
+                        iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - nombre.length();
 
-                String nombre = link8;
-                int iterator;
-                String espacio = "";
-                if ((nombre.length() > 5) && (nombre.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
-                    iterator = 0;
-                    StringBuffer errorInLine = new StringBuffer();
-                    iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - nombre.length();
+                        for (int m = 0; m < iterator; m++) {
+                            errorInLine.append(" ");
+                        }
 
-                    for (int m = 0; m < iterator; m++) {
-                        errorInLine.append(" ");
+                        espacio = errorInLine.toString();
+                    } else if (nombre.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+
+                        nombre = nombre.substring(0, 29);
                     }
 
-                    espacio = errorInLine.toString();
-                } else if (nombre.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(mo[0], LONGITUD_DETALLE_DOM_MONTO) + mo[0] + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
 
-                    nombre = nombre.substring(0, 29);
-                }
+                    validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
 
-                String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(link5.trim(), LONGITUD_DETALLE_DOM_MONTO) + link5.trim() + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
-                System.out.println(linea);
-
-                validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
-
-                if (!this.codigoOrdenante.equals(link0.trim())) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Codigo ordenante del registro nopertenece a la empresa que esta procesando el archivo.");
-                } else {
-                    if (i == 1) {
-                        mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
-                    }
-                    for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
-                        if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
-                            sw = true;
-                            break;
+                    if (!this.codigoOrdenante.equals(link0.trim())) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
+                    } else {
+                        if (i == 1) {
+                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+                        }
+                        for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
+                            if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
+                                sw = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (sw == false) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas.");
-                }
-                sw = false;
+                    if (sw == false) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas.");
+                    }
+                    sw = false;
 
-                newDomi.setStatus(validado.getStatusRegistro());
-                newDomi.setErrorInLine(validado.getErrores());
+                    newDomi.setStatus(validado.getStatusRegistro());
+                    newDomi.setErrorInLine(validado.getErrores());
 
-                if (validado.getLinea()) {
-                    newDomi.setLinea(linea);
-                } else {
-                    newDomi.setLinea("");
-                }
-                if (newDomi.getStatus().equals(false)) {
-                    tregisRecha++;
-                } else {
-                    tregisVal++;
-                }
-                listIbDomiciliacionesDet.add(newDomi);
+                    if (validado.getLinea()) {
+                        newDomi.setLinea(linea);
+                    } else {
+                        newDomi.setLinea("");
+                    }
+                    if (newDomi.getStatus().equals(false)) {
+                        tregisRecha++;
+                    } else {
+                        tregisVal++;
+                    }
+                    listIbDomiciliacionesDet.add(newDomi);
 
-                filaNum++;
-                int longitud = link5.trim().length();
-                //String monto =  link5.substring(0,longitud-2)+"."+link5.substring((longitud-2),4);
-                total = total + Double.valueOf(link5);
+                    filaNum++;
+                    int longitud = link5.trim().length();
+                    total = total + Integer.valueOf(mo[0]);
+                }
             }
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
             sumAfiliaMasive.setFechaCargaArchivo(new Date());
             sumAfiliaMasive.setFechaString(getFechaMod(new Date()));
             sumAfiliaMasive.setNombreDeArchivo(inputFilePath.split("-")[1]);
-            sumAfiliaMasive.setNumRegProcesados(rows);
+            sumAfiliaMasive.setNumRegProcesados(tregisTotal);
             sumAfiliaMasive.setNumRegValidados(tregisVal);
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
             sumAfiliaMasive.setMontoTotalAprovado(total);
             inp.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion2", ex.getMessage(), clase));
         }
     }
 
@@ -593,93 +601,94 @@ public class UploadController {
                 String link10 = linkCel10.getStringCellValue().trim();
                 String link11 = linkCel11.getStringCellValue().trim();
                 String link12 = linkCel12.getStringCellValue().trim();
+                link5 = link5.replace(",", ".");
+                String[] mo = link5.split("\\.");
+                if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty()
+                        && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty() && !link9.isEmpty() && !link10.isEmpty() && !link11.isEmpty() && !link12.isEmpty()) {
 
-                newDomi.setCodOrdenante(link0);
-                newDomi.setClaveOrdenente(link1);
-                newDomi.setTipoOperacion(link2);
-                newDomi.setSubTipoDominio(link3);
-                newDomi.setCtaPagador(link4);
-                newDomi.setMonto(link5);
-                newDomi.setTipoPagador(link6);
-                newDomi.setIdentificadorPagador(link7);
-                newDomi.setNombrePagador(link8);
-                newDomi.setRefContrato(link9);
-                newDomi.setFacturaNumero(link10);
-                newDomi.setFechaEmisionFactura(link11);
-                newDomi.setFechaVencimientoFactura(link12);
+                    newDomi.setCodOrdenante(link0);
+                    newDomi.setClaveOrdenente(link1);
+                    newDomi.setTipoOperacion(link2);
+                    newDomi.setSubTipoDominio(link3);
+                    newDomi.setCtaPagador(link4);
+                    newDomi.setMonto(mo[0]);
+                    newDomi.setTipoPagador(link6);
+                    newDomi.setIdentificadorPagador(link7);
+                    newDomi.setNombrePagador(link8);
+                    newDomi.setRefContrato(link9);
+                    newDomi.setFacturaNumero(link10);
+                    newDomi.setFechaEmisionFactura(link11);
+                    newDomi.setFechaVencimientoFactura(link12);
 
-                newDomi.setFechaCargar(new Date());
-                newDomi.setIdAfi(1);
-                newDomi.setCodUsuarioCarga(123);
-                newDomi.setLinea("");
-                String nombre = link8;
+                    newDomi.setFechaCargar(new Date());
+                    newDomi.setIdAfi(1);
+                    newDomi.setCodUsuarioCarga(123);
+                    newDomi.setLinea("");
+                    String nombre = link8;
 
-                int iterator;
-                String espacio = "";
-                if ((nombre.length() > 5) && (nombre.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
-                    iterator = 0;
-                    StringBuffer errorInLine = new StringBuffer();
-                    iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - nombre.length();
+                    int iterator;
+                    String espacio = "";
+                    if ((nombre.length() > 5) && (nombre.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
+                        iterator = 0;
+                        StringBuffer errorInLine = new StringBuffer();
+                        iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - nombre.length();
 
-                    for (int m = 0; m < iterator; m++) {
-                        errorInLine.append(" ");
+                        for (int m = 0; m < iterator; m++) {
+                            errorInLine.append(" ");
+                        }
+
+                        espacio = errorInLine.toString();
+                    } else if (nombre.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+
+                        nombre = nombre.substring(0, 29);
                     }
 
-                    espacio = errorInLine.toString();
-                } else if (nombre.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(mo[0], LONGITUD_DETALLE_DOM_MONTO) + mo[0] + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
 
-                    nombre = nombre.substring(0, 29);
-                }
+                    validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
 
-                String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(link5.trim(), LONGITUD_DETALLE_DOM_MONTO) + link5.trim() + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
-                System.out.println(linea);
-
-                validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
-
-                if (!this.codigoOrdenante.equals(link0.trim())) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Codigo ordenante del registro nopertenece a la empresa que esta procesando el archivo.");
-                } else {
-                    if (i == 1) {
-                        mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
-                    }
-                    for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
-                        if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
-                            sw = true;
-                            break;
+                    if (!this.codigoOrdenante.equals(link0.trim())) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
+                    } else {
+                        if (i == 1) {
+                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+                        }
+                        for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
+                            if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
+                                sw = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (sw == false) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas.");
-                }
-                sw = false;
-                newDomi.setStatus(validado.getStatusRegistro());
-                newDomi.setErrorInLine(validado.getErrores());
+                    if (sw == false) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas.");
+                    }
+                    sw = false;
+                    newDomi.setStatus(validado.getStatusRegistro());
+                    newDomi.setErrorInLine(validado.getErrores());
 
-                if (validado.getLinea()) {
-                    newDomi.setLinea(linea);
-                } else {
-                    newDomi.setLinea("");
+                    if (validado.getLinea()) {
+                        newDomi.setLinea(linea);
+                    } else {
+                        newDomi.setLinea("");
+                    }
+
+                    if (newDomi.getStatus().equals(false)) {
+                        tregisRecha++;
+                    } else {
+                        tregisVal++;
+                    }
+
+                    listIbDomiciliacionesDet.add(newDomi);
+                    tregisTotal++;
+                    filaNum++;
+                    int longitud = link5.trim().length();
+                    total = total + Integer.valueOf(mo[0]);
                 }
-
-                if (newDomi.getStatus().equals(false)) {
-                    tregisRecha++;
-                } else {
-                    tregisVal++;
-                }
-
-                listIbDomiciliacionesDet.add(newDomi);
-                tregisTotal++;
-                filaNum++;
-                int longitud = link5.trim().length();
-                //String monto =  link5.substring(0,longitud-2)+"."+link5.substring((longitud-2),4);
-                //String monto =  link5.substring(0,longitud-2)+"."+link5.substring((longitud-2),4);
-                total = total + Double.valueOf(link5);
-
             }
 
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
@@ -692,7 +701,7 @@ public class UploadController {
             sumAfiliaMasive.setMontoTotalAprovado(total);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion", e.getMessage(), clase));
         }
     }
 
@@ -706,9 +715,9 @@ public class UploadController {
         id++;
         afiliado.setId(id);
         afiliado.setNameBcoDestino(BancosEnum.getById(Integer.valueOf(afiliado.getCodBcoDestino())).getDescripcion());
-        if(afiliado.getTipoDoc().equalsIgnoreCase("J") || afiliado.getTipoDoc().equalsIgnoreCase("G")){
+        if (afiliado.getTipoDoc().equalsIgnoreCase("J") || afiliado.getTipoDoc().equalsIgnoreCase("G")) {
             afiliado.setTipoPagador("J");
-        }else{
+        } else {
             afiliado.setTipoPagador("N");
         }
         listFormAfiliacion.add(afiliado);
@@ -724,23 +733,20 @@ public class UploadController {
         Double tMontos = 0D;
         domiciliacion.setId(idDomi);
         listFormDomiciliacion.add(domiciliacion);
+        DecimalFormat formateador = new DecimalFormat("0.00");
         for (FormDomiciliacion formDomiciliacion : listFormDomiciliacion) {
             tRegis++;
-
             String motoRegistro = formDomiciliacion.getMonto();
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
             motoRegistroAux = motoRegistroAux + "." + a[1];
-            tMontos = tMontos + Double.valueOf(motoRegistroAux);
-
+            tMontos = tMontos + Double.parseDouble(motoRegistroAux);
         }
-
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        DecimalFormat formateador = new DecimalFormat("###,###.##");
-        respuesta.setTotalMontosString(formateador.format(tMontos));
+        respuesta.setTotalMontosString(formateador.format(tMontos).replace(",", "."));
         return respuesta;
     }
 
@@ -748,9 +754,9 @@ public class UploadController {
     @ResponseBody
     public List<FormAfiliacion> editAfiliacionTemp(@RequestBody FormAfiliacion afiliado) {
         int flag = 0;
-        if(afiliado.getTipoDoc().equalsIgnoreCase("J") || afiliado.getTipoDoc().equalsIgnoreCase("G")){
+        if (afiliado.getTipoDoc().equalsIgnoreCase("J") || afiliado.getTipoDoc().equalsIgnoreCase("G")) {
             afiliado.setTipoPagador("J");
-        }else{
+        } else {
             afiliado.setTipoPagador("N");
         }
         for (FormAfiliacion formAfiliacion : listFormAfiliacion) {
@@ -763,11 +769,9 @@ public class UploadController {
                 formAfiliacion.setNombrePagador(afiliado.getNombrePagador());
                 formAfiliacion.setTipoDoc(afiliado.getTipoDoc());
                 formAfiliacion.setTipoPagador(afiliado.getTipoPagador());
-
                 flag = 1;
             }
         }
-
         return listFormAfiliacion;
     }
 
@@ -790,7 +794,6 @@ public class UploadController {
     @RequestMapping(value = "/getfecha", method = RequestMethod.GET)
     @ResponseBody
     public String getfecha() {
-
         return getFechaMod2(new Date());
     }
 
@@ -847,11 +850,9 @@ public class UploadController {
         MgParametrosOrdenantes mgParametrosOrdenantes = ibAfiliacionesServices.BuscarEmpresaOrdenanteByRif(rif);
         Integer codOrd = Integer.valueOf(this.codigoOrdenante);
         RespuestaDTO respuesta = new RespuestaDTO();
-
         if (codOrd != mgParametrosOrdenantes.getCodigoOrdenante()) {
             respuesta.setCodigo("000");
             respuesta.setDescripcion("");
-
         } else {
             respuesta.setCodigo("001");
             respuesta.setDescripcion("El ordenante y el pagador no pueden ser la misma persona. ");
@@ -875,10 +876,8 @@ public class UploadController {
         FormAfiliacion Afiliado = new FormAfiliacion();
         List<MgAfiliacionesPresentadas> afiliaciones = new ArrayList<MgAfiliacionesPresentadas>();
         afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion(numDoc, this.codigoOrdenante);
-
         FormAfiliacion afliacion = new FormAfiliacion();
         for (MgAfiliacionesPresentadas afiliacione : afiliaciones) {
-
             afliacion.setCtaBcoDestino(afiliacione.getCuentaPagador());
             afliacion.setNombrePagador(afiliacione.getNombrePagador());
             afliacion.setNumIdentPagador(afiliacione.getIdentificacionPagador().substring(1, afiliacione.getIdentificacionPagador().length()));
@@ -887,7 +886,6 @@ public class UploadController {
             String banco = BancosEnum.getById(afilicod).getDescripcion();
             afliacion.setCodBcoDestino(afiliacione.getCuentaPagador().substring(0, 4) + "-" + banco);
         }
-
         return afliacion;
     }
 
@@ -898,21 +896,19 @@ public class UploadController {
         FormAfiliacion Afiliado = new FormAfiliacion();
         List<MgAfiliacionesPresentadas> afiliaciones = new ArrayList<MgAfiliacionesPresentadas>();
         afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion2(numDoc, this.codigoOrdenante);
-
         FormAfiliacion afliacion = new FormAfiliacion();
-
         for (MgAfiliacionesPresentadas afiliacione : afiliaciones) {
-            System.out.println("CANTIDAD DE ENCONTRADOS " + afiliaciones.size());
             afliacion.setCtaBcoDestino(afiliacione.getCuentaPagador());
             afliacion.setNombrePagador(afiliacione.getNombrePagador());
-            System.out.println("NOMBRE: " + afiliacione.getNombrePagador());
             afliacion.setNumIdentPagador(afiliacione.getIdentificacionPagador().substring(1, afiliacione.getIdentificacionPagador().length()));
             afliacion.setRefContrato(afiliacione.getContrato());
+            if (afliacion.getRefContrato() != null) {
+                afliacion.setRefContrato(afliacion.getRefContrato().replaceFirst("^0*", ""));
+            }
             int afilicod = Integer.valueOf(afiliacione.getCuentaPagador().substring(1, 4));
             String banco = BancosEnum.getById(afilicod).getDescripcion();
             afliacion.setCodBcoDestino(afiliacione.getCuentaPagador().substring(0, 4) + "-" + banco);
         }
-
         return afliacion;
     }
 
@@ -928,22 +924,20 @@ public class UploadController {
         DomiciliacionRestTempDTO respuesta = new DomiciliacionRestTempDTO();
         Long tRegis = 0L;
         Double tMontos = 0D;
+        DecimalFormat formateador = new DecimalFormat("0.00");
         for (FormDomiciliacion formDomiciliacion : this.listFormDomiciliacion) {
             tRegis++;
-
             String motoRegistro = formDomiciliacion.getMonto();
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
             motoRegistroAux = motoRegistroAux + "." + a[1];
-            tMontos = tMontos + Double.valueOf(motoRegistroAux);
+            tMontos = tMontos + Double.parseDouble(motoRegistroAux);
         }
-        DecimalFormat formateador = new DecimalFormat("###,###.##");
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        respuesta.setTotalMontosString(formateador.format(tMontos));
-
+        respuesta.setTotalMontosString(formateador.format(tMontos).replace(",", "."));
         return respuesta;
     }
 
@@ -970,7 +964,6 @@ public class UploadController {
         RespuestaDTO respuesta = new RespuestaDTO();
         this.listIbAfiliacionesDet = new ArrayList<>();
         try {
-
             for (FormAfiliacion formAfiliacion1 : this.listFormAfiliacion) {
                 IbAfiliacionesDetDTO afiliacion = new IbAfiliacionesDetDTO();
                 afiliacion.setCodOrdenante(this.codigoOrdenante);
@@ -1021,7 +1014,7 @@ public class UploadController {
                 sumarioAfiliaciones.setCodigoOrdenante(Long.valueOf(this.codigoOrdenante));
                 sumarioAfiliaciones.setEstatusCargar(0L);
                 sumarioAfiliaciones.setFechaHoraCarga(new Date());
-                SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+                SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
                 String fechaHora = ((new Date()).getTime() + "");
 
                 String nombreDinamicoArchivo = "AF_" + this.codigoOrdenante + "_" + formatter.format(new Date()) + "_M_" + fechaHora.subSequence((fechaHora.length() - 4), fechaHora.length());
@@ -1052,18 +1045,21 @@ public class UploadController {
                         executor.shutdown();
                     });
                     clearCargaAfiDom();
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Se procesó el temporal de afiliaciones correctamente", "", clase));
                 } else {
                     respuesta.setCodigo("001");
                     respuesta.setDescripcion("Error al procesar la afiliacion intentelo nuevamente.");
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Error al procesar la afiliacion intentelo nuevamente", "", clase));
                 }
             } else {
                 respuesta.setCodigo("001");
                 respuesta.setDescripcion("Error, no hay afiliaciones para procesar.");
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay afiliaciones para procesar", "", clase));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             respuesta.setCodigo("001");
-            respuesta.setDescripcion("Error en servicio de afiliación individual en linea ");
+            respuesta.setDescripcion("Error en servicio de afiliación individual en linea");
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en servicio de afiliación individual en linea", e.getMessage(), clase));
         }
 
         return respuesta;
@@ -1078,10 +1074,8 @@ public class UploadController {
         try {
             this.listIbAfiliacionesDet = new ArrayList<>();
             this.listIbAfiliacionesDetError = new ArrayList<>();
-            System.out.println("paso 1 --> uploadAfiliacionMasiva");
             RespuestaDTO resp = procesoArchivo(fileAfiliacion, "AF");
             if (resp.getCodigo().equals("000")) {
-                System.out.println("paso 4 --> uploadAfiliacionMasiva");
                 ModelAndView model = new ModelAndView("afiliacion/datosAfiliacionCagaMasiva");
                 return model;
             } else {
@@ -1089,7 +1083,7 @@ public class UploadController {
                 return model;
             }
         } catch (Exception e) {
-            System.out.println("paso 1 exc --> uploadAfiliacionMasiva");
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error uploadAfiliacionMasiva", e.getMessage(), clase));
             ModelAndView model = new ModelAndView("main/home");
             return model;
         }
@@ -1098,31 +1092,28 @@ public class UploadController {
     @RequestMapping(value = "/getSumariAfilMasiva", method = RequestMethod.GET)
     @ResponseBody
     public SumarioCargaMasivaDTO getSumariAfilMasiva() {
-
         return this.sumAfiliaMasive;
     }
 
     @RequestMapping(value = "/getSumarioDomicMasiva", method = RequestMethod.GET)
     @ResponseBody
     public SumarioCargaMasivaDTO getSumarioDomicMasiva() {
-        DecimalFormat formateador = new DecimalFormat("###,###.##");
+        DecimalFormat formateador = new DecimalFormat("0.00");
         String as = this.sumAfiliaMasive.getMontoTotalAprovado().toString();
         String monto[] = this.sumAfiliaMasive.getMontoTotalAprovado().toString().split("\\.");
         as = as.replaceAll("[,.]", "");
         String m = monto[0] + "." + monto[1];
         Double mon = Double.valueOf(m);
-        this.sumAfiliaMasive.setMontoTotal(formateador.format(mon));
+        this.sumAfiliaMasive.setMontoTotal(formateador.format(mon).replace(",", "."));
         return this.sumAfiliaMasive;
     }
 
     @RequestMapping(value = "/procesarAfiliaciones", method = RequestMethod.GET)
     @ResponseBody
-
     public Boolean procesarAfiliaciones() {
         Boolean flag = Boolean.TRUE;
         Long idSumarioAfi = 0L;
         try {
-
             IbSumarioAfiliaciones sumarioAfiliaciones = new IbSumarioAfiliaciones();
             sumarioAfiliaciones.setCodigoOrdenante(Long.valueOf(this.codigoOrdenante));
             sumarioAfiliaciones.setEstatusCargar(0L);
@@ -1155,7 +1146,6 @@ public class UploadController {
         } catch (Exception e) {
             flag = Boolean.FALSE;
         }
-
         return flag;
     }
 
@@ -1165,7 +1155,6 @@ public class UploadController {
         Boolean flag = Boolean.TRUE;
         Long idSumarioDomic = 0L;
         try {
-
             IbSumarioPagos sumarioPagos = new IbSumarioPagos();
             sumarioPagos.setCodigoOrdenante(Long.valueOf(this.codigoOrdenante));
             sumarioPagos.setEstatusCargar(0L);
@@ -1175,16 +1164,13 @@ public class UploadController {
             sumarioPagos.setNroRegistrosRechazados(new BigInteger("" + sumAfiliaMasive.getNumRegRechazados()));
             sumarioPagos.setNroRegistrosValidados(new BigInteger("" + sumAfiliaMasive.getNumRegValidados()));
             sumarioPagos.setMontoTotalAprovado(new BigDecimal("" + sumAfiliaMasive.getMontoTotalAprovado()));
-
             if (sumarioPagos.getNroRegistrosValidados() != BigInteger.ZERO) {
                 idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
                 if (idSumarioDomic == 0L) {
                     idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
                 }
             }
-
             if (idSumarioDomic != 0L) {
-
                 for (IbDomiciliacionesDetDTO ibDomiciliacionesDetDTO : listIbDomiciliacionesDet) {
                     ibDomiciliacionesDetDTO.setCodLote(idSumarioDomic);
                 }
@@ -1203,7 +1189,6 @@ public class UploadController {
         } catch (Exception e) {
             flag = Boolean.FALSE;
         }
-
         return flag;
     }
 
@@ -1223,16 +1208,14 @@ public class UploadController {
         InputStream inp = null;
         try {
             inp = new FileInputStream(inputFilePath);
-
             XSSFWorkbook libro = new XSSFWorkbook(inp); //Declare XSSF WorkBook
             XSSFSheet hoja = libro.getSheetAt(0); //sheet can be used as common for XSSF and HSSF
             int rows = hoja.getLastRowNum();
             int tregisVal = 0, tregisRecha = 0;
             int tregisTotal = 0;
-            for (int i = 1; i <= rows; ++i) {
+            for (int i = 1; i <= rows; i++) {
                 Validation validado = new Validation();
                 IbAfiliacionesDetDTO newAfi = new IbAfiliacionesDetDTO();
-                tregisTotal++;
 
                 XSSFRow q = hoja.getRow(i);
                 String link0 = ("" + q.getCell(0)).trim();
@@ -1245,55 +1228,59 @@ public class UploadController {
                 String link7 = ("" + q.getCell(7)).trim();
                 String link8 = ("" + q.getCell(8)).trim();
 
-                newAfi.setCodOrdenante(("" + q.getCell(0)).trim());
-                newAfi.setClaveOrdenente(("" + q.getCell(1)).trim());
-                newAfi.setCodBcoDestino(("" + q.getCell(2)).trim());
-                newAfi.setTipoOperacion(("" + q.getCell(3)).trim());
-                newAfi.setTipoPagador(("" + q.getCell(4)).trim());
-                newAfi.setNumIdentPagador(("" + q.getCell(5)).trim());
-                newAfi.setCtaBcoDestino(("" + q.getCell(6)).trim());
-                newAfi.setNombrePagador(("" + q.getCell(7)).trim());
-                newAfi.setRefContrato(("" + q.getCell(8)).trim());
-                newAfi.setFechaCargar(new Date());
-                newAfi.setIdAfi(1);
-                newAfi.setCodUsuarioCarga(123);
-                newAfi.setLinea("");
-                int iterator;
-                String espacio = "";
-                if ((link7.length() > 5) && (link7.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
-                    iterator = 0;
-                    StringBuffer errorInLine = new StringBuffer();
-                    iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - link7.length();
+                if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty()
+                        && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty()) {
+                    tregisTotal++;
+                    newAfi.setCodOrdenante(("" + q.getCell(0)).trim());
+                    newAfi.setClaveOrdenente(("" + q.getCell(1)).trim());
+                    newAfi.setCodBcoDestino(("" + q.getCell(2)).trim());
+                    newAfi.setTipoOperacion(("" + q.getCell(3)).trim());
+                    newAfi.setTipoPagador(("" + q.getCell(4)).trim());
+                    newAfi.setNumIdentPagador(("" + q.getCell(5)).trim());
+                    newAfi.setCtaBcoDestino(("" + q.getCell(6)).trim());
+                    newAfi.setNombrePagador(("" + q.getCell(7)).trim());
+                    newAfi.setRefContrato(("" + q.getCell(8)).trim());
+                    newAfi.setFechaCargar(new Date());
+                    newAfi.setIdAfi(1);
+                    newAfi.setCodUsuarioCarga(123);
+                    newAfi.setLinea("");
+                    int iterator;
+                    String espacio = "";
+                    if ((link7.length() > 5) && (link7.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
+                        iterator = 0;
+                        StringBuffer errorInLine = new StringBuffer();
+                        iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - link7.length();
 
-                    for (int m = 0; m < iterator; m++) {
-                        errorInLine.append(" ");
+                        for (int m = 0; m < iterator; m++) {
+                            errorInLine.append(" ");
+                        }
+
+                        espacio = errorInLine.toString();
+                    } else if (link7.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+
+                        link7 = link7.substring(0, 29);
                     }
+                    String as = link0 + link1 + agregarEspacio(link1, LONGITUD_DETALLE_CLAVE_ORDENANTE) + link2 + link3 + link4 + link5 + agregarEspacio(link5, LONGITUD_NUMERO_PAGADOR) + link6 + link7.trim() + espacio + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_REFERENCIA_CONTRATO);
+                    newAfi.setLinea(as);
 
-                    espacio = errorInLine.toString();
-                } else if (link7.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+                    validado = validatorCargaAfiliaciones.getValidaAfiliacion(newAfi);
 
-                    link7 = link7.substring(0, 29);
+                    if (!this.codigoOrdenante.equals(link0.trim())) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
+                    }
+                    newAfi.setStatus(validado.getStatusRegistro());
+                    newAfi.setErrorInLine(validado.getErrores());
+                    newAfi.setNroRechazo(validado.getCodError());
+
+                    if (validado.getStatusRegistro()) {
+                        tregisVal++;
+                    } else {
+                        tregisRecha++;
+                    }
+                    listIbAfiliacionesDet.add(newAfi);
                 }
-                String as = link0 + link1 + agregarEspacio(link1, LONGITUD_DETALLE_CLAVE_ORDENANTE) + link2 + link3 + link4 + link5 + agregarEspacio(link5, LONGITUD_NUMERO_PAGADOR) + link6 + link7.trim() + espacio + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_REFERENCIA_CONTRATO);
-                newAfi.setLinea(as);
-
-                validado = validatorCargaAfiliaciones.getValidaAfiliacion(newAfi);
-
-                if (!this.codigoOrdenante.equals(link0.trim())) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
-                }
-                newAfi.setStatus(validado.getStatusRegistro());
-                newAfi.setErrorInLine(validado.getErrores());
-                newAfi.setNroRechazo(validado.getCodError());
-
-                if (validado.getStatusRegistro()) {
-                    tregisVal++;
-                } else {
-                    tregisRecha++;
-                }
-                listIbAfiliacionesDet.add(newAfi);
             }
             listIbAfiliacionesDet.addAll(listIbAfiliacionesDetError);
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
@@ -1303,17 +1290,13 @@ public class UploadController {
             sumAfiliaMasive.setNumRegProcesados(tregisTotal);
             sumAfiliaMasive.setNumRegValidados(tregisVal);
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
-
             inp.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion2", e.getMessage(), clase));
         }
     }
 
     public void uploadExelAfiliacion(String inputFilePath) {
-        System.out.println("LLega a uploadExelAfiliacion");
         listIbAfiliacionesDet.clear();
         try {
             HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(inputFilePath));
@@ -1324,7 +1307,7 @@ public class UploadController {
             for (int i = 1; i <= rows; ++i) {
                 Validation validado = new Validation();
                 IbAfiliacionesDetDTO newAfi = new IbAfiliacionesDetDTO();
-                tregisTotal++;
+
                 HSSFRow row = sheet.getRow(i);
                 HSSFCell linkCel0 = row.getCell(0);
                 HSSFCell linkCel1 = row.getCell(1);
@@ -1335,6 +1318,7 @@ public class UploadController {
                 HSSFCell linkCel6 = row.getCell(6);
                 HSSFCell linkCel7 = row.getCell(7);
                 HSSFCell linkCel8 = row.getCell(8);
+
                 String link0 = linkCel0.getStringCellValue().trim();
                 String link1 = linkCel1.getStringCellValue().trim();
                 String link2 = linkCel2.getStringCellValue().trim();
@@ -1344,58 +1328,61 @@ public class UploadController {
                 String link6 = linkCel6.getStringCellValue().trim();
                 String link7 = linkCel7.getStringCellValue().trim();
                 String link8 = linkCel8.getStringCellValue().trim();
-                newAfi.setCodOrdenante(linkCel0.getStringCellValue().trim());
-                newAfi.setClaveOrdenente(linkCel1.getStringCellValue().trim());
-                newAfi.setCodBcoDestino(linkCel2.getStringCellValue().trim());
-                newAfi.setTipoOperacion(linkCel3.getStringCellValue().trim());
-                newAfi.setTipoPagador(linkCel4.getStringCellValue().trim());
-                newAfi.setNumIdentPagador(linkCel5.getStringCellValue().trim());
-                newAfi.setCtaBcoDestino(linkCel6.getStringCellValue().trim());
-                newAfi.setNombrePagador(linkCel7.getStringCellValue().trim());
-                newAfi.setRefContrato(linkCel8.getStringCellValue().trim());
+                if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty() && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty()) {
+                    tregisTotal++;
+                    newAfi.setCodOrdenante(linkCel0.getStringCellValue().trim());
+                    newAfi.setClaveOrdenente(linkCel1.getStringCellValue().trim());
+                    newAfi.setCodBcoDestino(linkCel2.getStringCellValue().trim());
+                    newAfi.setTipoOperacion(linkCel3.getStringCellValue().trim());
+                    newAfi.setTipoPagador(linkCel4.getStringCellValue().trim());
+                    newAfi.setNumIdentPagador(linkCel5.getStringCellValue().trim());
+                    newAfi.setCtaBcoDestino(linkCel6.getStringCellValue().trim());
+                    newAfi.setNombrePagador(linkCel7.getStringCellValue().trim());
+                    newAfi.setRefContrato(linkCel8.getStringCellValue().trim());
 
-                newAfi.setFechaCargar(new Date());
-                newAfi.setIdAfi(1);
-                newAfi.setCodUsuarioCarga(123);
-                newAfi.setLinea("");
+                    newAfi.setFechaCargar(new Date());
+                    newAfi.setIdAfi(1);
+                    newAfi.setCodUsuarioCarga(123);
+                    newAfi.setLinea("");
 
-                int iterator;
-                String espacio = "";
-                if ((link7.length() > 5) && (link7.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
-                    iterator = 0;
-                    StringBuffer errorInLine = new StringBuffer();
-                    iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - link7.length();
+                    int iterator;
+                    String espacio = "";
+                    if ((link7.length() > 5) && (link7.length() < LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
+                        iterator = 0;
+                        StringBuffer errorInLine = new StringBuffer();
+                        iterator = LONGITUD_DETALLE_NOMBRE_PAGADOR - link7.length();
 
-                    for (int m = 0; m < iterator; m++) {
-                        errorInLine.append(" ");
+                        for (int m = 0; m < iterator; m++) {
+                            errorInLine.append(" ");
+                        }
+
+                        espacio = errorInLine.toString();
+                    } else if (link7.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+
+                        link7 = link7.substring(0, 29);
                     }
 
-                    espacio = errorInLine.toString();
-                } else if (link7.length() > LONGITUD_DETALLE_NOMBRE_PAGADOR) {
+                    String as = link0 + link1 + agregarEspacio(link1, LONGITUD_DETALLE_CLAVE_ORDENANTE) + link2 + link3 + link4 + link5 + agregarEspacio(link5, LONGITUD_NUMERO_PAGADOR) + link6 + link7.trim() + espacio + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_REFERENCIA_CONTRATO);
 
-                    link7 = link7.substring(0, 29);
+                    newAfi.setLinea(as);
+
+                    validado = validatorCargaAfiliaciones.getValidaAfiliacion(newAfi);
+                    if (!this.codigoOrdenante.equals(link0.trim())) {
+                        validado.setCodError("212");
+                        validado.setStatusRegistro(false);
+                        validado.setErrores("Codigo ordenante del registro nopertenece a la empresa que esta procesando el archivo.");
+                    }
+                    newAfi.setStatus(validado.getStatusRegistro());
+                    newAfi.setErrorInLine(validado.getErrores());
+                    newAfi.setNroRechazo(validado.getCodError());
+
+                    if (validado.getStatusRegistro()) {
+                        tregisVal++;
+                    } else {
+                        tregisRecha++;
+                    }
+                    listIbAfiliacionesDet.add(newAfi);
                 }
-
-                String as = link0 + link1 + agregarEspacio(link1, LONGITUD_DETALLE_CLAVE_ORDENANTE) + link2 + link3 + link4 + link5 + agregarEspacio(link5, LONGITUD_NUMERO_PAGADOR) + link6 + link7.trim() + espacio + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_REFERENCIA_CONTRATO);
-
-                newAfi.setLinea(as);
-
-                validado = validatorCargaAfiliaciones.getValidaAfiliacion(newAfi);
-                if (!this.codigoOrdenante.equals(link0.trim())) {
-                    validado.setCodError("212");
-                    validado.setStatusRegistro(false);
-                    validado.setErrores("Codigo ordenante del registro nopertenece a la empresa que esta procesando el archivo.");
-                }
-                newAfi.setStatus(validado.getStatusRegistro());
-                newAfi.setErrorInLine(validado.getErrores());
-                newAfi.setNroRechazo(validado.getCodError());
-
-                if (validado.getStatusRegistro()) {
-                    tregisVal++;
-                } else {
-                    tregisRecha++;
-                }
-                listIbAfiliacionesDet.add(newAfi);
 
             }
 
@@ -1408,8 +1395,7 @@ public class UploadController {
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
 
         } catch (Exception ex) {
-            Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("error Por excepcion en uploadExelAfiliacion");
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion", ex.getMessage(), clase));
         }
     }
 
@@ -1430,8 +1416,8 @@ public class UploadController {
         Date fecha = new Date(Calendar.getInstance().getTimeInMillis());
 
         // En esta linea de código estamos indicando el nuevo formato que queremos para nuestra fecha.
-        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
-//        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
+//        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("ddMMyy");
         // Aqui usamos la instancia formatter para darle el formato a la fecha. Es importante ver que el resultado es un string.
         String fechaTexto = formatter.format(fecha);
         operationName = arrayName[0];
@@ -1485,7 +1471,7 @@ public class UploadController {
                 String[] archivo2 = file.getOriginalFilename().split("\\.");
 
                 for (int x = 0; x < archivo.length; x++) {
-                    if (/*archivo[x].compareTo("vnd.ms-excel") == 0 || */archivo2[1].equals("xls") && swFile) {
+                    if (archivo[x].compareTo("vnd.ms-excel") == 0 || archivo2[1].equals("xls") && swFile) {
                         swFile = false;
                         // se verifica si existe la carpeta tempAfiliaciones sino se crea 
                         String rutaCarpeta = "/tempAfiliaciones/afiliacionFile/";
@@ -1514,7 +1500,7 @@ public class UploadController {
                             System.out.println("El fichero no puede ser borrado");
                         }
 
-                    } else if (/*archivo[x].compareTo("vnd.openxmlformats-officedocument.spreadsheetml.sheet") == 0 ||*/ archivo2[1].equals("xlsx") && swFile) {
+                    } else if (archivo[x].compareTo("vnd.openxmlformats-officedocument.spreadsheetml.sheet") == 0 || archivo2[1].equals("xlsx") && swFile) {
                         swFile = false;
                         // se verifica si existe la carpeta tempAfiliaciones sino se crea 
                         String rutaCarpeta = "/tempAfiliaciones/afiliacionFile/";
@@ -1592,7 +1578,6 @@ public class UploadController {
                                         listIbAfiliacionesDet.add(newAfi);
 
                                     }
-                                    System.out.println("" + o);
                                     o++;
                                 }
 
@@ -1622,7 +1607,6 @@ public class UploadController {
                                 if (!linea.trim().equals("")) {
                                     removerTildes(linea);
                                     i++;
-                                    System.out.println(linea);
                                     IbDomiciliacionesDetDTO newDom = new IbDomiciliacionesDetDTO();
                                     regisTotalDomic++;
                                     newDom.setCodOrdenante(linea.substring(poss, poss += LONGITUD_DETALLE_DOM_CODIGO_ORDENANTE));
@@ -1663,15 +1647,9 @@ public class UploadController {
                                     if (sw == false) {
                                         validado.setCodError("212");
                                         validado.setStatusRegistro(false);
-                                        validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas.");
+                                        validado.setErrores("Registro no se encuentra en mg_afiliaciones_presentadas con status = P");
                                     }
                                     sw = false;
-                                    //Validacon con mg_afiliaciones_presentadas
-                                    /*se consulta la tabla 
-                                     select mapr.codigo_ordenante, mapr.clave_ordenante, mapr.referencia_contrato, mapr.codigo_resultado 
-                                    from mg_afiliaciones_presentadas mapr where mapr.codigo_ordenante=0001 and mapr.codigo_resultado = 'P'
-                                    y se compara con los valores del archivo
-                                     */
                                     newDom.setStatus(validado.getStatusRegistro());
                                     newDom.setErrorInLine(validado.getErrores());
 
@@ -1689,7 +1667,6 @@ public class UploadController {
                                     this.listIbDomiciliacionesDet.add(newDom);
                                 }
                             }
-
                             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
                             sumAfiliaMasive.setFechaCargaArchivo(new Date());
                             sumAfiliaMasive.setFechaString(getFechaMod(new Date()));
@@ -1700,23 +1677,17 @@ public class UploadController {
                             sumAfiliaMasive.setMontoTotalProcesado(montoTotalDomic);
                             sumAfiliaMasive.setMontoTotalAprovado(montoTotalDomicVal);
                             sumAfiliaMasive.setMontoTotalRechazado(montoTotalDomicRech);
-
                         }
-
                     }
-
                 }
 
             } catch (IOException e) {
-
-                e.printStackTrace();
+                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en el proceso general del archivo procesoArchivo", e.getMessage(), clase));
             }
 
         } else {
-            // error de formato de nombre de archivo 
             respuesta.setCodigo("101");
             respuesta.setDescripcion("error de formato de nombre de archivo");
-
         }
         return respuesta;
     }
@@ -1816,7 +1787,7 @@ public class UploadController {
     }
 
     public String formatFecha(Date fecha) {
-        SimpleDateFormat formateador = new SimpleDateFormat("ddMMyyyy");
+        SimpleDateFormat formateador = new SimpleDateFormat("ddMMyy");
         String fechaFormatString = formateador.format(fecha);
         return fechaFormatString;
 
@@ -1825,72 +1796,85 @@ public class UploadController {
     @RequestMapping(value = "/consolidadoAfiliaciones", method = RequestMethod.GET)
     @ResponseBody
     public List<ConsolidadoAfiliacionesDTO> consolidadoAfiliaciones() {
-        listConsolidadoAfiliaciones = ibAfiliacionesServices.ListarConsolidadosDeAfiliaciones(Integer.valueOf(this.codigoOrdenante));
+        try {
+            listConsolidadoAfiliaciones = ibAfiliacionesServices.ListarConsolidadosDeAfiliaciones(Integer.valueOf(this.codigoOrdenante));
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase));
+        }
         return listConsolidadoAfiliaciones;
     }
 
     @RequestMapping(value = "/detalleAfiliaciones", method = RequestMethod.GET)
     @ResponseBody
     public List<DetalleAfiliacionesDTO> detalleAfiliaciones(@RequestParam("idLote") String idLote) {
-
-        List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes();
-        List<DetalleAfiliacionesDTO> detalleList = ibAfiliacionesServices.BuscarAfiliadoPorlote(Long.valueOf(idLote), this.codigoOrdenante);
-        for (DetalleAfiliacionesDTO detalleAfiliacionesDTO : detalleList) {
-            // for (IbMensajes mensaje : mensajes) {
-            /*   if (detalleAfiliacionesDTO.getCodigoResultado() != null && detalleAfiliacionesDTO.getCodigoResultado().equals("" + mensaje.getId())) {
-                    detalleAfiliacionesDTO.setCodigoResultado(mensaje.getDescripcion());
-              /*  } else if (detalleAfiliacionesDTO.getCodigoResultado().equals("null") && (detalleAfiliacionesDTO.getSituacion().equals("A"))) {
-                    detalleAfiliacionesDTO.setCodigoResultado("APROBADO");*/
- /*   } else*/
-            if (/*detalleAfiliacionesDTO.getCodigoResultado() == null && */(detalleAfiliacionesDTO.getSituacion().equals("P"))) {
-                detalleAfiliacionesDTO.setCodigoResultado("APROBADA");
-            } else if (/*detalleAfiliacionesDTO.getCodigoResultado() == null &&*/(detalleAfiliacionesDTO.getSituacion().equals("C"))) {
-                if (detalleAfiliacionesDTO.isSwOrdenantes() == false) {// el registro està en presentadas
-                    detalleAfiliacionesDTO.setCodigoResultado("ENVIADO A CÁMARA");
-                } else {
-                    detalleAfiliacionesDTO.setCodigoResultado("POR PROCESAR");
+        List<DetalleAfiliacionesDTO> detalleList = null;
+        try {
+            List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes();
+            detalleList = ibAfiliacionesServices.BuscarAfiliadoPorlote(Long.valueOf(idLote), this.codigoOrdenante);
+            for (DetalleAfiliacionesDTO detalleAfiliacionesDTO : detalleList) {
+                if (detalleAfiliacionesDTO.getSituacion().equals("P")) {
+                    detalleAfiliacionesDTO.setCodigoResultado("APROBADA");
+                } else if (detalleAfiliacionesDTO.getSituacion().equals("C")) {
+                    if (detalleAfiliacionesDTO.isSwOrdenantes() == false) {// el registro està en presentadas
+                        detalleAfiliacionesDTO.setCodigoResultado("ENVIADO A CÁMARA");
+                    } else {
+                        detalleAfiliacionesDTO.setCodigoResultado("POR PROCESAR");
+                    }
+                } else if ((detalleAfiliacionesDTO.getSituacion().equals("X")) || (detalleAfiliacionesDTO.getSituacion().equals("R"))) {
+                    detalleAfiliacionesDTO.setCodigoResultado("RECHAZADA");
                 }
-            } else if (/*detalleAfiliacionesDTO.getCodigoResultado() == null &&*/(detalleAfiliacionesDTO.getSituacion().equals("X")) || (detalleAfiliacionesDTO.getSituacion().equals("R"))) {
-                detalleAfiliacionesDTO.setCodigoResultado("RECHAZADA");
+                if (detalleAfiliacionesDTO.getContrato() != null) {
+                    detalleAfiliacionesDTO.setContrato(detalleAfiliacionesDTO.getContrato().replaceFirst("^0*", ""));
+                }
             }
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de Afiliaciones", e.getMessage(), clase));
         }
-        //}
         return detalleList;
     }
 
     @RequestMapping(value = "/cosolidadoDomiciliaciones", method = RequestMethod.GET)
     @ResponseBody
     public List<ConsolidadoDomiciliacionesDTO> cosolidadoDomiciliaciones() {
-        return ibDomiciliacionesServices.ListarConsolidadosDedominciliaciones(Integer.valueOf(this.codigoOrdenante));
+        List<ConsolidadoDomiciliacionesDTO> list = new ArrayList<>();
+        try {
+            list = ibDomiciliacionesServices.ListarConsolidadosDedominciliaciones(Integer.valueOf(this.codigoOrdenante));
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Domiciliaciones", e.getMessage(), clase));
+        }
+        return list;
     }
 
     @RequestMapping(value = "/detalleDomiciliaciones", method = RequestMethod.GET)
     @ResponseBody
     public List<DetalleDomiciliacionesDTO> detalleDomiciliaciones(@RequestParam("idLote") String idLote) {
-        DecimalFormat formateador = new DecimalFormat("###,###.##");
+        DecimalFormat formateador = new DecimalFormat("0.00");
         List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes();
         List<DetalleDomiciliacionesDTO> listDomicilia = ibDomiciliacionesServices.BuscarDomiciliacionesByLote(Long.valueOf(idLote), this.codigoOrdenante);
-        for (DetalleDomiciliacionesDTO detalleDomiciliacionesDTO : listDomicilia) {
-            String as = null;
-            if(detalleDomiciliacionesDTO.getMonto().trim().contains(".")){
-                as = detalleDomiciliacionesDTO.getMonto().trim();
-                detalleDomiciliacionesDTO.setMonto(as);
-            }else{
-                as = Integer.valueOf(detalleDomiciliacionesDTO.getMonto().trim()).toString();
-                detalleDomiciliacionesDTO.setMonto(formateador.format(Double.valueOf(as.substring(0, (as.length() - 2)) + "." + as.substring((as.length() - 2), as.length()))));
+        try {
+            for (DetalleDomiciliacionesDTO detalleDomiciliacionesDTO : listDomicilia) {
+                String as = null;
+                if (detalleDomiciliacionesDTO.getMonto().trim().contains(".")) {
+                    as = detalleDomiciliacionesDTO.getMonto().trim();
+                    detalleDomiciliacionesDTO.setMonto(as);
+                } else {
+                    as = Integer.valueOf(detalleDomiciliacionesDTO.getMonto().trim()).toString();
+                    detalleDomiciliacionesDTO.setMonto(formateador.format(Double.valueOf(as.substring(0, (as.length() - 2)) + "." + as.substring((as.length() - 2), as.length()))));
+                }
+                if (detalleDomiciliacionesDTO.getSituacion().equals("X") || detalleDomiciliacionesDTO.getSituacion().equals("R") || (detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso().endsWith("N"))) {
+                    detalleDomiciliacionesDTO.setCodigoResultado("RECHAZADO");
+                } else if ((detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso() == null) || detalleDomiciliacionesDTO.getSituacion().equals("C")) {
+                    detalleDomiciliacionesDTO.setCodigoResultado("En PROCESO");
+                } else if ((detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso().equals("S")) || detalleDomiciliacionesDTO.getSituacion().equals("P") || detalleDomiciliacionesDTO.getSituacion().equals("K")) {
+                    detalleDomiciliacionesDTO.setCodigoResultado("PROCESADO");
+                }
+                if (detalleDomiciliacionesDTO.getFactura() != null) {
+                    detalleDomiciliacionesDTO.setFactura(detalleDomiciliacionesDTO.getFactura().replaceFirst("^0*", ""));
+                }
+                detalleDomiciliacionesDTO.setMonto(detalleDomiciliacionesDTO.getMonto().replace(",", "."));
             }
-//            for (IbMensajes mensaje : mensajes) {
-//                if (detalleDomiciliacionesDTO.getCodigoResultado().equals("" + mensaje.getId())) {
-//                    detalleDomiciliacionesDTO.setCodigoResultado(mensaje.getDescripcion());
-//                } else 
-            if (detalleDomiciliacionesDTO.getSituacion().equals("X") || detalleDomiciliacionesDTO.getSituacion().equals("R") ) {
-                detalleDomiciliacionesDTO.setCodigoResultado("RECHAZADO");
-            } else if ((detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso().equals(null)) || detalleDomiciliacionesDTO.getSituacion().equals("C")) {
-                detalleDomiciliacionesDTO.setCodigoResultado("En PROCESO");
-            } else if ((detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso().equals("SI")) || detalleDomiciliacionesDTO.getSituacion().equals("P") || detalleDomiciliacionesDTO.getSituacion().equals("K")) {
-                detalleDomiciliacionesDTO.setCodigoResultado("PROCESADO");
-            } 
-//            }
+        } catch (Exception e) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de domiciliaciones", e.getMessage(), clase));
         }
         return listDomicilia;
     }

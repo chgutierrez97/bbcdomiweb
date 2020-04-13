@@ -1,42 +1,133 @@
-
+/* Autor: Ledwin Belén */
 thead {
-   background-color: #e7cdcd; 
+    background-color: #e7cdcd; 
 }
 
 tbody{ 
 
-	background-color: #fafafa; 
- }
+    background-color: #fafafa; 
+}
 
 table, th, td {
-  border: 20px ;
-  border-collapse: separate;
-  border-spacing:  5px;
+    border: 20px ;
+    /*   border-collapse: separate;*/
+    border-color: #f8f9fa;
+    border-spacing:  5px;
 
 }
 
-/*select:hover {
-color: ##f3e3e3;
-background: #ddd;
-
-
-  background: rgba(247, 220,220, 0.3);
- 
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
-}*/
 .contenedor{
-	text-align: center;
-	background:##f3e3e3;
+    text-align: center;
+    background:##f3e3e3;
 }
 
 .contenedor-lf{
-	text-align: left;
-	background:##f3e3e3;
+    text-align: left;
+    background:##f3e3e3;
 }
 
 .contenedor-rg{
-	text-align: right;
-	background:##f3e3e3;
+    text-align: right;
+    background:##f3e3e3;
 }
 
+.col-lg-4-led{
+    position: relative;
+    width: 100%;
+}
 
+.col-lg-4-led {
+    -ms-flex: 0 0 33.333333%;
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+}
+.col-lg-10-led {
+    -ms-flex: 0 0 83.333333%;
+    flex: 0 0 83.333333%;
+    max-width: 83.333333%;
+}
+
+.col-lg-10-led{
+    position: relative;
+    width: 100%;
+    padding-right: 65px;
+}
+
+.table-led{
+    font-size: 12px;   
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #dee2e6;
+}
+
+.table-borde-led{
+    border-top: 2px solid #dee2e6;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.list-led{
+    font-size: 14px;
+}
+
+#contenedor-botones {
+       padding-top: 56px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+    }
+    .clear{
+        clear: both;
+    }
+    .boton {
+        width: 33%;
+        height: 40px;
+        text-align: center!important;
+        border-left: 5px solid #f34a4a;   
+        padding-bottom: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 10px;
+        background: #fff;
+        border-radius: 0 8px 8px 0;
+        -webkit-box-shadow: 4px 9px 14px -5px rgba(0,0,0,0.31);
+        -moz-box-shadow: 4px 9px 14px -5px rgba(0,0,0,0.31);
+        box-shadow: 4px 9px 14px -5px rgba(0,0,0,0.31);
+    }
+    .boton:hover {
+        background: #f7cfcf;
+        cursor: pointer;
+        
+        transition-property: all;
+        transition-duration: 0.2s;
+        transition-timing-function: ease-in;
+        transition-delay: 0s;
+        font-weight:bold;
+    }
+    .boton:nth-child(2) {
+           margin: 0 10px;
+    }
+    @media screen and (max-width: 500px) {
+        #contenedor-botones {
+           display: block!important;
+        }
+       .boton { 
+        float: none;
+        width: 100%;
+        margin-right:0;
+        width:auto;
+        font-size: 18px;
+        margin: 7px 0;
+      }
+      .boton:nth-child(2) {
+            margin: 0px;
+        }
+        .container {
+           width: 100%!important;
+        }
+    }
+    .activo {
+       background: #f7cfcf;
+       cursor: pointer;
+    }

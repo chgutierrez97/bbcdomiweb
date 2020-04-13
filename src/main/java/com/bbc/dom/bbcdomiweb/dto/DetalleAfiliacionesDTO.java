@@ -18,6 +18,7 @@ public class DetalleAfiliacionesDTO {
      private String codigoResultado;
      private String situacion;
      private boolean swOrdenantes;
+     private String motivoRechazo;
 
     public DetalleAfiliacionesDTO() {
     }
@@ -96,6 +97,14 @@ public class DetalleAfiliacionesDTO {
 
     public void setSwOrdenantes(boolean swOrdenantes) {
         this.swOrdenantes = swOrdenantes;
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
     }
     
     @Override

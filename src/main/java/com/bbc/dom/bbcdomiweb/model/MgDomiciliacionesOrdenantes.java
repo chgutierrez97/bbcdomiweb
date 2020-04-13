@@ -42,8 +42,8 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "MgDomiciliacionesOrdenantes.findByCodigoRechazo", query = "SELECT m FROM MgDomiciliacionesOrdenantes m WHERE m.codigoRechazo = :codigoRechazo")})
 @SequenceGenerator(
     name="MgDomiciliacionesOrd",
-    sequenceName = "MG_S_GRUPO_DOMICILIACION",
-//    sequenceName = "MG_S_DOMICILIACIONES_ORD", Verificar
+   // sequenceName = "MG_S_GRUPO_DOMICILIACION",
+    sequenceName = "MG_S_DOMICILIACIONES_ORD", 
     initialValue = 1, 
     allocationSize = 10
 )
