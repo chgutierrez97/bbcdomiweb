@@ -20,6 +20,8 @@ public class LogDTO {
     private String origin;
     private String message;
     private String data;
+    private String idUser;
+    private String codUser;
 
     public LogDTO(String date, String time, String level, String ip, String status, String origin, String message, String data) {
         this.date = date;
@@ -31,6 +33,21 @@ public class LogDTO {
         this.message = message;
         this.data = data;
     }
+
+    public LogDTO(String date, String time, String level, String ip, String status, String origin, String message, String data, String idUser, String codUser) {
+        this.date = date;
+        this.time = time;
+        this.level = level;
+        this.ip = ip;
+        this.status = status;
+        this.origin = origin;
+        this.message = message;
+        this.data = data;
+        this.idUser = idUser;
+        this.codUser = codUser;
+    }
+    
+    
 
     public String getDate() {
         return date;
@@ -95,6 +112,56 @@ public class LogDTO {
     public void setData(String data) {
         this.data = data;
     }
+
+    public String getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(String idUser) {
+        this.idUser = idUser;
+    }
+
+    public String getCodUser() {
+        return codUser;
+    }
+
+    public void setCodUser(String codUser) {
+        this.codUser = codUser;
+    }
     
-    
+    public static class LogTableDTO{
+        private String idUser;
+        private String codUser;
+        private String ipClient;
+
+        public LogTableDTO(String idUser, String codUser, String ipClient) {
+            this.idUser = idUser;
+            this.codUser = codUser;
+            this.ipClient = ipClient;
+        }
+        
+        public String getIdUser() {
+            return idUser;
+        }
+
+        public void setIdUser(String idUser) {
+            this.idUser = idUser;
+        }
+
+        public String getCodUser() {
+            return codUser;
+        }
+
+        public void setCodUser(String codUser) {
+            this.codUser = codUser;
+        }
+
+        public String getIpClient() {
+            return ipClient;
+        }
+
+        public void setIpClient(String ipClient) {
+            this.ipClient = ipClient;
+        }        
+    }   
 }

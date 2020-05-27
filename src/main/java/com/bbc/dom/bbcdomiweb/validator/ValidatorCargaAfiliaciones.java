@@ -43,7 +43,7 @@ public class ValidatorCargaAfiliaciones {
 
             //Longitud del detalle        
             if (!(afiliaciones.getLinea().length() <= LONGITUD_DE_LINEA_SUP) || !(afiliaciones.getLinea().length() >= LONGITUD_DE_LINEA_INF)) {
-                errorInLine.append("Registro no cumple especif. 117/118 caracteres");
+                errorInLine.append("Registro no cumple especif. 117/118 caracteres ");
                 nroRechazo = "212";
                 flag = Boolean.FALSE;
             }
@@ -65,21 +65,21 @@ public class ValidatorCargaAfiliaciones {
 
             //Banco destino
             if (!elementoValidator.validaSoloNumeros(afiliaciones.getCtaBcoDestino().trim())) {
-                errorInLine.append("Campo codigo de banco que no aplica formato debe ser numerico");
+                errorInLine.append("Campo codigo de banco que no aplica formato debe ser numérico ");
                 nroRechazo = "212";
                 flag = Boolean.FALSE;
             }
 
             //Tipo Operacion  
             if (!elementoValidator.validaSolaUnaDeEstasLetras(afiliaciones.getTipoOperacion(), "AD")) {
-                errorInLine.append("Campo Tipo de Operacion  que no aplica formato");
+                errorInLine.append("Campo Tipo de Operacion no aplica formato ");
                 nroRechazo = "212";
                 flag = Boolean.FALSE;
             }
 
             //Tipo Pagador          
             if (!elementoValidator.validaSolaUnaDeEstasLetras(afiliaciones.getTipoPagador(), "NRJG")) {
-                errorInLine.append("Campo Tipo Pagador que no aplica formato");
+                errorInLine.append("Campo Tipo Pagador no aplica formato ");
                 nroRechazo = "212";
                 flag = Boolean.FALSE;
             }
@@ -87,19 +87,19 @@ public class ValidatorCargaAfiliaciones {
             String resultadoValidatorTipoPagador = afiliaciones.getTipoPagador();
             if (resultadoValidatorTipoPagador.contains("N")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(afiliaciones.getNumIdentPagador().substring(0, 1), "VEP")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador natural no aplica formato ");
                     nroRechazo = "212";
                     flag = Boolean.FALSE;
                 }
             } else if (resultadoValidatorTipoPagador.contains("R")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(afiliaciones.getNumIdentPagador().substring(0, 1), "VE")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador natural no aplica formato ");
                     nroRechazo = "212";
                     flag = Boolean.FALSE;
                 }
             } else if (resultadoValidatorTipoPagador.contains("J")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(afiliaciones.getNumIdentPagador().substring(0, 1), "JG")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador Juridico que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador Juridico no aplica formato ");
                     nroRechazo = "212";
                     flag = Boolean.FALSE;
                 }
@@ -115,19 +115,19 @@ public class ValidatorCargaAfiliaciones {
             //numero identificacion pagador
             if (!elementoValidator.validaSoloNumeros(afiliaciones.getNumIdentPagador().substring(1, (afiliaciones.getNumIdentPagador().length() - 1)))) {
                 flag = Boolean.FALSE;
-                errorInLine.append("Campo Detalle Nro. identificador Pagador  no aplica formato");
+                errorInLine.append("Campo Nro. identificador Pagador no aplica formato ");
                 nroRechazo = "500";
             }
 
             if (!elementoValidator.validaSoloNumeros(afiliaciones.getCtaBcoDestino())) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Cta. posee caracteres alpha numericos ");
+                errorInLine.append("La Cta. posee caracteres alpha numéricos ");
                 nroRechazo = "212";
             }
 
             if (afiliaciones.getCtaBcoDestino().length() != LONGITUD_DETALLE_CUENTA_PAGADOR) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Cta. tiene una longitud diferente a la establecida de 20 digitos");
+                errorInLine.append("La Cta. tiene una longitud diferente a la establecida de 20 dígitos ");
                 nroRechazo = "212";
             }
             if (BancosEnum.getById(Integer.valueOf(afiliaciones.getCtaBcoDestino().substring(0, 4))) == null) {
@@ -137,7 +137,7 @@ public class ValidatorCargaAfiliaciones {
             }
             if (!(afiliaciones.getCtaBcoDestino().substring(0, 4).trim().equals(afiliaciones.getCodBcoDestino()))){
                 flag = Boolean.FALSE;
-                errorInLine.append("Error en codigo Banco no corresponde en Cta. ");
+                errorInLine.append("Error en codigo del banco destino, no corresponde a la cuenta Cta. ");
                 nroRechazo = "212";
             }
 
@@ -150,13 +150,13 @@ public class ValidatorCargaAfiliaciones {
             if (!(afiliaciones.getNombrePagador().length() <= LONGITUD_DETALLE_NOMBRE_PAGADOR)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("EL nombre del pagador tiene una longitud diferente a la establecida de 30 caracteres");
+                errorInLine.append("EL nombre del pagador tiene una longitud diferente a la establecida de 30 caracteres ");
                 nroRechazo = "212";
             }
             if (!(afiliaciones.getNombrePagador().length() > 5)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("EL nombre del pagador debe ser mayor a 5 caracteres");
+                errorInLine.append("EL nombre del pagador debe ser mayor a 5 caracteres ");
                 nroRechazo = "212";
             }
 
@@ -164,12 +164,12 @@ public class ValidatorCargaAfiliaciones {
             if (!(afiliaciones.getRefContrato().length() <= LONGITUD_DETALLE_REFERENCIA_CONTRATO)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("La Ref. Contrato tiene una longitud diferente a la establecida de " + LONGITUD_DETALLE_REFERENCIA_CONTRATO + "caracteres");
+                errorInLine.append("La Ref. Contrato tiene una longitud diferente a la establecida de " + LONGITUD_DETALLE_REFERENCIA_CONTRATO + " caracteres");
                 nroRechazo = "212";
             }
             if (!elementoValidator.validaAlfaNumerico(afiliaciones.getRefContrato())) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Ref. Contrato posee caracteres incorrectos");
+                errorInLine.append("La Ref. Contrato posee caracteres incorrectos ");
                 nroRechazo = "212";
             }
         } catch (Exception e) {

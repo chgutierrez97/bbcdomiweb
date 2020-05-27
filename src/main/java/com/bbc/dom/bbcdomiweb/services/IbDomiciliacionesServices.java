@@ -5,13 +5,11 @@
  */
 package com.bbc.dom.bbcdomiweb.services;
 
-import com.bbc.dom.bbcdomiweb.dto.ConsolidadoAfiliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.ConsolidadoDomiciliacionesDTO;
-import com.bbc.dom.bbcdomiweb.dto.DetalleAfiliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.DetalleDomiciliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.IbDomiciliacionesDetDTO;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioPagos;
-import com.bbc.dom.bbcdomiweb.model.MgAfiliacionesOrdenantes;
 import com.bbc.dom.bbcdomiweb.model.MgCalendario;
 import com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesEnviadas;
 import com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesOrdenantes;
@@ -20,7 +18,6 @@ import com.bbc.dom.bbcdomiweb.repository.DomiciliacionRepository;
 import com.bbc.dom.bbcdomiweb.repository.SumarioPagosRepository;
 import com.bbc.dom.bbcdomiweb.util.Util;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,13 +48,14 @@ public class IbDomiciliacionesServices extends Util {
     private static final String Success = "Success";
     private static final String Fail = "Fail";
     private Util util = new Util();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
     String clase = IbDomiciliacionesServices.class.getName();
 
-    public synchronized Boolean procesarCarga(List<IbDomiciliacionesDetDTO> domiciliacionesList) {
+    public synchronized Boolean procesarCarga(List<IbDomiciliacionesDetDTO> domiciliacionesList, LogDTO.LogTableDTO logTable) {
         Boolean flag = Boolean.TRUE;
         DomiciliacionRepository dr = new DomiciliacionRepository();
         dr.setEntityManager(em);
-        Date fechaValida = BuscarFechaValida();
+        Date fechaValida = BuscarFechaValida(logTable);
 
         int i = 0;
         try {
@@ -86,17 +84,17 @@ public class IbDomiciliacionesServices extends Util {
                 dr.create(domiciliacioni);
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Domiciliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Domiciliaciones", e.getMessage(), clase, logTable));
             flag = Boolean.FALSE;
 
         }
         if (flag) {
-            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de Domiciliaciones exitoso", "", clase));
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de Domiciliaciones exitoso", "", clase, logTable));
         }
         return flag;
     }
 
-    public Date BuscarFechaValida() {
+    public Date BuscarFechaValida(LogDTO.LogTableDTO logTable) {
         MgCalendario a = new MgCalendario();
         String var = "BCC";
         try {
@@ -108,12 +106,12 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("codigoAplicacion", var)
                     .getSingleResult();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgCalendario", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgCalendario", e.getMessage(), clase, logTable));
         }
         return a.getFechaHoy();
     }
 
-    public Long procesarSumario(IbSumarioPagos sumarioPagos) {
+    public Long procesarSumario(IbSumarioPagos sumarioPagos, LogDTO.LogTableDTO logTable) {
         Long flag = 0L;
         SumarioPagosRepository sp = new SumarioPagosRepository();
         sp.setEntityManager(em);
@@ -131,12 +129,12 @@ public class IbDomiciliacionesServices extends Util {
                     .getSingleResult();
             flag = sumarioPag.getId();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase, logTable));
         }
         return flag;
     }
 
-    public List<IbSumarioPagos> ListarConsolidadosDedominciliaciones2(int codOrdenante) {
+    public List<IbSumarioPagos> ListarConsolidadosDedominciliaciones2(int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<IbSumarioPagos> ibSumarioPagos = null;
         try {
             StringBuilder consulta = new StringBuilder();
@@ -147,12 +145,12 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("codigoOrdenante", codOrdenante)
                     .getResultList();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase, logTable));
         }
         return ibSumarioPagos;
     }
 
-    public List<MgDomiciliacionesOrdenantes> BuscarDomiciliacionesPorFechas(String startDate, String endDate, int codOrdenante) {
+    public List<MgDomiciliacionesOrdenantes> BuscarDomiciliacionesPorFechas(String startDate, String endDate, int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgDomiciliacionesOrdenantes> mgDomiciliacionesOrdenantes = null;
         Date fechaInicio = new Date();
         Date fechaFin = new Date();
@@ -197,12 +195,12 @@ public class IbDomiciliacionesServices extends Util {
                         .getResultList();
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesOrdenantes", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesOrdenantes", e.getMessage(), clase, logTable));
         }
         return mgDomiciliacionesOrdenantes;
     }
 
-    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesByLote(Long numLote, String codOrdenante) {
+    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesByLote(Long numLote, String codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgDomiciliacionesOrdenantes> mgDomiciliacionesOrdenantes = null;
         List<DetalleDomiciliacionesDTO> detalleDomiciliacionesDTO = new ArrayList<>();
         List<DetalleDomiciliacionesDTO> detalleDomiciliacionesDTOAux = new ArrayList<>();
@@ -234,11 +232,11 @@ public class IbDomiciliacionesServices extends Util {
                 detDomic.setDescripcion("");
                 detDomic.setSituacion(mgDomiciliacionesOrdenante.getSituacion());
                 detDomic.setCobroExitoso("www");
-                detDomic.setFechaCarga(getFechaMod3(mgDomiciliacionesOrdenante.getFechaCarga()));
+                detDomic.setFechaCarga(getFechaMod3(mgDomiciliacionesOrdenante.getFechaCarga(), logTable));
                 detDomic.setMotivoRechazo(mgDomiciliacionesOrdenante.getMotivoRechazo() == null ? "" : mgDomiciliacionesOrdenante.getMotivoRechazo());
                 detalleDomiciliacionesDTO.add(detDomic);
             }
-            detalleDomiciliacionesDTOAux = this.BuscarDomiciliacionesEnviadas(numLote);
+            detalleDomiciliacionesDTOAux = this.BuscarDomiciliacionesEnviadas(numLote, logTable);
             boolean sw = false;
             if (detalleDomiciliacionesDTOAux.size() > 0) {
                 for (DetalleDomiciliacionesDTO detalleDomiciliaciones : detalleDomiciliacionesDTO) {
@@ -258,12 +256,12 @@ public class IbDomiciliacionesServices extends Util {
                 data.addAll(detalleDomiciliacionesDTO);
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar Domiciliaciones por lote", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar Domiciliaciones por lote", e.getMessage(), clase, logTable));
         }
         return data;
     }
 
-    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesEnviadas(Long numLote) {
+    public List<DetalleDomiciliacionesDTO> BuscarDomiciliacionesEnviadas(Long numLote, LogDTO.LogTableDTO logTable) {
         List<MgDomiciliacionesEnviadas> mgDomiciliacionesEnviadas = null;
         List<DetalleDomiciliacionesDTO> detalleDomiciliacionesDTO = new ArrayList<>();
         try {
@@ -276,7 +274,7 @@ public class IbDomiciliacionesServices extends Util {
                     .getResultList();
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesEnviadas", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla MgDomiciliacionesEnviadas", e.getMessage(), clase, logTable));
         }
 
         for (MgDomiciliacionesEnviadas domiciliacionesEnviadas : mgDomiciliacionesEnviadas) {
@@ -298,19 +296,19 @@ public class IbDomiciliacionesServices extends Util {
             detDomic.setDescripcion("");
             detDomic.setSituacion(domiciliacionesEnviadas.getAplicadoUap());
             detDomic.setCobroExitoso(domiciliacionesEnviadas.getCobroExitoso());
-            detDomic.setFechaCarga(getFechaMod3(domiciliacionesEnviadas.getFechaCreacion()));
+            detDomic.setFechaCarga(getFechaMod3(domiciliacionesEnviadas.getFechaCreacion(), logTable));
             detDomic.setMotivoRechazo(domiciliacionesEnviadas.getCodigoError() == null ? "" : domiciliacionesEnviadas.getCodigoError());
             detalleDomiciliacionesDTO.add(detDomic);
         }
         return detalleDomiciliacionesDTO;
     }
 
-    public String getFechaMod3(Date fecha) {
+    public String getFechaMod3(Date fecha, LogDTO.LogTableDTO logTable) {
         SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy");
         return sf.format(fecha);
     }
 
-    public List<IbSumarioPagos> BuscarSumario(String nombreArchivo, String opraciopn) {
+    public List<IbSumarioPagos> BuscarSumario(String nombreArchivo, String opraciopn, LogDTO.LogTableDTO logTable) {
         List<IbSumarioPagos> ibSumarioPagos = null;
         if ((nombreArchivo == null)) {
             nombreArchivo = "";
@@ -328,12 +326,12 @@ public class IbDomiciliacionesServices extends Util {
                     .setParameter("nombreArchivo", nombreArchivo)
                     .getResultList();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar tabla IbSumarioPagos", e.getMessage(), clase, logTable));
         }
         return ibSumarioPagos;
     }
 
-    public List<ConsolidadoDomiciliacionesDTO> ListarConsolidadosDedominciliaciones(int codOrdenante) {
+    public List<ConsolidadoDomiciliacionesDTO> ListarConsolidadosDedominciliaciones(int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<ConsolidadoDomiciliacionesDTO> consolidadoDomiciliacionesDTO = new ArrayList<>();;
         try {
             // Ordenantes
@@ -404,10 +402,10 @@ public class IbDomiciliacionesServices extends Util {
                     sw = false;
                 }
             } catch (Exception e) {
-                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase));
+                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase, logTable));
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar consolidados de domiciliaciones", e.getMessage(), clase, logTable));
         }
         return consolidadoDomiciliacionesDTO;
     }

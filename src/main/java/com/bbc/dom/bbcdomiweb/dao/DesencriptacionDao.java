@@ -5,6 +5,8 @@
  */
 package com.bbc.dom.bbcdomiweb.dao;
 
+import com.bbc.dom.bbcdomiweb.dto.ClienteDTO;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.dto.SesionDTO;
 
 /**
@@ -15,6 +17,8 @@ public interface DesencriptacionDao {
     
     public String desencriptar(String Semilla);
     
+    public ClienteDTO desencriptar2(String Semilla, LogDTO.LogTableDTO logTable);
+    
     public String getCodigoOrdenante(String rif);
     
     public boolean insertNewSesion(SesionDTO sesion);
@@ -23,6 +27,8 @@ public interface DesencriptacionDao {
     
     public boolean mantenimientoSesion(SesionDTO sesion);
     
-    public void pruebaLog();
+    public String encrypIp(String mensaje);
+    
+    public String desencrypIp(String mensaje);
     
 }

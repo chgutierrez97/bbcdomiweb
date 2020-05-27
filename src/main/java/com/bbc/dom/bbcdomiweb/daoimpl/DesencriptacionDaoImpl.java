@@ -7,6 +7,7 @@ package com.bbc.dom.bbcdomiweb.daoimpl;
 
 import com.bbc.dom.bbcdomiweb.dao.DesencriptacionDao;
 import com.bbc.dom.bbcdomiweb.dto.ClienteDTO;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.dto.SesionDTO;
 import com.bbc.dom.bbcdomiweb.model.IbSesionDomiciliaciones;
 import com.bbc.dom.bbcdomiweb.model.MgParametrosOrdenantes;
@@ -43,6 +44,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
     private static final String Success = "Success";
     private static final String Fail = "Fail";
     private Util util = new Util();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
     String clase = DesencriptacionDaoImpl.class.getName();
     EntityManagerFactory emf = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em = emf.createEntityManager();
@@ -60,16 +62,42 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
         try {
             b24Decodificado = decodificarBase24(Semilla);
             jsonObject = decodificarObjetoJSON(b24Decodificado);
-            token = getTokenDashboardBase64(jsonObject);          
+            token = getTokenDashboardBase64(jsonObject);
             String claveRandom = getClaveRandomDashboardBase64(jsonObject);
             desencriptadoBlowfish = this.desencriptacionBlowfish(key, token, claveRandom);
             desencriptadoBlowfishBase64Decode = decodificarBase24(desencriptadoBlowfish);
             rif = parserObjetoJsonDesencriptado(desencriptadoBlowfishBase64Decode).getCedulaRif();
-            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Semilla válida", "", clase));
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Semilla válida", "", clase, logTable));
         } catch (Exception ex) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Semilla inválida", ex.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Semilla inválida", ex.getMessage(), clase, logTable));
         }
         return rif;
+    }
+
+    @Override
+    public ClienteDTO desencriptar2(String Semilla, LogDTO.LogTableDTO logTable) {
+        this.logTable = logTable;
+        String hashB24;
+        ClienteDTO cdto = null;
+        String b24Decodificado;
+        JsonObject jsonObject;
+        String token;
+        String desencriptadoBlowfish;
+        String desencriptadoBlowfishBase64Decode = null;
+        ClienteDTO cliente = null;
+        try {
+            b24Decodificado = decodificarBase24(Semilla);
+            jsonObject = decodificarObjetoJSON(b24Decodificado);
+            token = getTokenDashboardBase64(jsonObject);
+            String claveRandom = getClaveRandomDashboardBase64(jsonObject);
+            desencriptadoBlowfish = this.desencriptacionBlowfish(key, token, claveRandom);
+            desencriptadoBlowfishBase64Decode = decodificarBase24(desencriptadoBlowfish);
+            cliente = parserObjetoJsonDesencriptado(desencriptadoBlowfishBase64Decode);
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Semilla válida", "", clase, logTable));
+        } catch (Exception ex) {
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Semilla inválida", ex.getMessage(), clase, logTable));
+        }
+        return cliente;
     }
 
     public String decodificarBase24(String hashDashboard) {
@@ -83,7 +111,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
         JsonObject jsonObject = null;
         jsonObject = new JsonParser().parse(hashBase24Decodificado).getAsJsonObject();
         if (jsonObject == null) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en decodificar JSON de HASHBASE24", "", clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en decodificar JSON de HASHBASE24", "", clase, logTable));
         }
         return jsonObject;
     }
@@ -93,7 +121,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
         try {
             token = jsonObject.get("encrypted_data").getAsString();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se puede obtenerelemento encrypted_data", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se puede obtenerelemento encrypted_data", e.getMessage(), clase, logTable));
         }
         return token;
     }
@@ -103,7 +131,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
         try {
             clave = jsonObject.get("iv").getAsString();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se puede obtenerelemento IV", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se puede obtenerelemento IV", e.getMessage(), clase, logTable));
         }
         return clave;
     }
@@ -121,7 +149,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
             byte[] dataDecodificada = Base64.getDecoder().decode(encrypted_data);
             dataDesencriptada = cifrado.doFinal(dataDecodificada);
         } catch (Exception ex) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en proceso desencripcion", ex.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en proceso desencripcion", ex.getMessage(), clase, logTable));
         }
         return new String(dataDesencriptada);
     }
@@ -155,11 +183,9 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                 }
                 if (i == 11) {
                     cdto.setUserID(aux.substring(0, aux.length() - 2).replace('"', ' ').trim());
-              //      LOGGER.info("user id de usuario es " + cdto.getUserID());
                 }
                 if (i == 15) {
                     cdto.setNombre(new String(aux.substring(0, aux.length() - 2).replace('"', ' ').trim().getBytes(), "ISO-8859-1"));
-            //        LOGGER.info("nombre de usuario es " + cdto.getNombre());
                 }
                 if (i == 19) {
                     cdto.setCedulaRif(aux.substring(0, aux.length() - 2).replace('"', ' ').trim());
@@ -169,7 +195,6 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                 }
                 if (i == 33) {
                     cdto.setNroAbank(aux.substring(0, aux.length() - 2).replace('"', ' ').trim());
-               //     LOGGER.info("nro abank de usuario es " + cdto.getNroAbank());
                 }
                 if (i == 47) {
                     cdto.setTelefono(aux.substring(0, aux.length() - 2).replace('"', ' ').trim());
@@ -187,7 +212,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                 }
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "NO SE PUEDE OBTENER ELEMENTO DE SESION DEL CLIENTE DASHBOARD", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "NO SE PUEDE OBTENER ELEMENTO DE SESION DEL CLIENTE DASHBOARD", e.getMessage(), clase, logTable));
         }
 
         return cdto;
@@ -205,7 +230,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                     .setParameter("rifOrdenante", rif.trim())
                     .getSingleResult();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error obteniendo el código ordenante", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error obteniendo el código ordenante", e.getMessage(), clase, logTable));
         }
         if (mgParametrosOrdenantes != null) {
             return mgParametrosOrdenantes.getCodigoOrdenante().toString();
@@ -228,10 +253,10 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
             sr.setEntityManager(em);
             sr.persist(ibSesionDomiciliaciones);
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al insertar la nueva sesión", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al insertar la nueva sesión", e.getMessage(), clase, logTable));
             return false;
         }
-        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion nueva creada", "", clase));
+        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion nueva creada", "", clase, logTable));
         return true;
     }
 
@@ -253,10 +278,10 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                 return false;
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al cerrar la sesión", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al cerrar la sesión", e.getMessage(), clase, logTable));
             return false;
         }
-        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion cerrada correctamente", "", clase));
+        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion cerrada correctamente", "", clase, logTable));
         return true;
     }
 
@@ -278,10 +303,10 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                 return false;
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al actualizar la sesión", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al actualizar la sesión", e.getMessage(), clase, logTable));
             return false;
         }
-        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion Actualizada Correctamente", "", clase));
+        LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Sesion Actualizada Correctamente", "", clase, logTable));
         return true;
     }
 
@@ -295,7 +320,7 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
                     .setParameter("identificacionPagador", rif.trim())
                     .getSingleResult();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error obteniendo el id de la sesión", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error obteniendo el id de la sesión", e.getMessage(), clase, logTable));
         }
         if (ibSesionDomiciliaciones != null) {
             return ibSesionDomiciliaciones;
@@ -304,11 +329,30 @@ public class DesencriptacionDaoImpl implements DesencriptacionDao {
     }
 
     @Override
-    public void pruebaLog() {
+    public String encrypIp(String mensaje) {
         try {
-            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Prueba Exitosa", "", clase));
+            char array[] = mensaje.toCharArray();
+            for (int i = 0; i < array.length; i++) {
+                array[i] = (char) (array[i] + (char) 5);
+            }
+            return String.valueOf(array);
         } catch (Exception ex) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Falló prueba", ex.getMessage(), clase));
+            LOGGER.info("Falló encriptación SNG");
         }
+        return "";
+    }
+    
+    @Override
+    public String desencrypIp(String mensaje) {
+        try {
+            char array[] = mensaje.toCharArray();
+            for (int i = 0; i < array.length; i++) {
+                array[i] = (char) (array[i] - (char) 5);
+            }
+            return String.valueOf(array);
+        } catch (Exception ex) {
+            LOGGER.info("Falló encriptación SNG");
+        }
+        return "";
     }
 }

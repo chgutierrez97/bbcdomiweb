@@ -7,14 +7,12 @@ package com.bbc.dom.bbcdomiweb.services;
 
 import com.bbc.dom.bbcdomiweb.dto.IbAfiliacionesDetDTO;
 import com.bbc.dom.bbcdomiweb.dto.IbDomiciliacionesDetDTO;
-import com.bbc.dom.bbcdomiweb.model.IbSumarioPagos;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  *
@@ -32,6 +30,7 @@ public class IbhiloAfiliacionDomiciliacion {
     private static final String Success = "Success";
     private static final String Fail = "Fail";
     private Util util = new Util();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
     String clase = IbhiloAfiliacionDomiciliacion.class.getName();
 
     public IbhiloAfiliacionDomiciliacion(List<IbAfiliacionesDetDTO> listIbAfiliacionesDet, List<IbDomiciliacionesDetDTO> listIbDomiciliacionesDet, String opcion) {
@@ -49,18 +48,18 @@ public class IbhiloAfiliacionDomiciliacion {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void regis() {
+    public void regis(LogDTO.LogTableDTO logTable) {
         try {
             if (flag) {
-                if (ibAfiliacionesServices.procesarCarga(this.listIbAfiliacionesDet)) {
-                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de afiliaciones culminado con éxito ", "", clase));
+                if (ibAfiliacionesServices.procesarCarga(this.listIbAfiliacionesDet, logTable)) {
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de afiliaciones culminado con éxito ", "", clase, logTable));
                     Thread.currentThread().interrupt();
                 } else {
                     Thread.currentThread().interrupt();
                 }
             } else {
-                if (ibDomiciliacionesServices.procesarCarga(this.listIbDomiciliacionesDet)) {
-                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de domiciliaciones culminado con éxito ", "", clase));
+                if (ibDomiciliacionesServices.procesarCarga(this.listIbDomiciliacionesDet, logTable)) {
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de domiciliaciones culminado con éxito ", "", clase, logTable));
                     Thread.currentThread().interrupt();
                 } else {
                     Thread.currentThread().interrupt();

@@ -1,12 +1,9 @@
 package com.bbc.dom.bbcdomiweb.util;
 
 import com.bbc.dom.bbcdomiweb.controller.LogTableController;
-import com.bbc.dom.bbcdomiweb.daoimpl.DesencriptacionDaoImpl;
 import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.services.Desencriptacion;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,22 +45,25 @@ public class Util {
         return codOrdenante;
     }
 
-    public synchronized String createLog(String level, String status, String message, String data, String origin) {
+    public synchronized String createLog(String level, String status, String message, String data, String origin, LogDTO.LogTableDTO logTableDto ) {
         LogTableController logTable= new LogTableController();
         Date date = new Date();
         SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm:ss");
         String fecha = formatoFecha.format(date);
         String hora = formatoHora.format(date);
-        String ip = "";
+        String ip = logTableDto.getIpClient();
+        String idUser = logTableDto.getIdUser();
+        String codUser = logTableDto.getCodUser();
         ObjectMapper mapper = new ObjectMapper();
         String json = "";
         try {
             Desencriptacion des = new Desencriptacion();
-            LogDTO log = new LogDTO(fecha, hora, level, des.IP, status, origin, message, data);
+            LogDTO log = new LogDTO(fecha, hora, level, ip, status, origin, message, data);
+            LogDTO log2 = new LogDTO(fecha, hora, level, ip, status, origin, message, data, idUser, codUser);
             json = mapper.writerWithDefaultPrettyPrinter()
                     .writeValueAsString(log);
-            logTable.logTable(log);
+            logTable.logTable(log2);
         } catch (Exception ex) {
             Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
         }

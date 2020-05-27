@@ -1,5 +1,7 @@
 package com.bbc.dom.bbcdomiweb.controller;
 
+import com.bbc.dom.bbcdomiweb.dao.DesencriptacionDao;
+import com.bbc.dom.bbcdomiweb.dto.ClienteDTO;
 import com.bbc.dom.bbcdomiweb.dto.ConsolidadoAfiliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.ConsolidadoDomiciliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.DetalleAfiliacionesDTO;
@@ -8,7 +10,7 @@ import com.bbc.dom.bbcdomiweb.dto.DomiciliacionRestTempDTO;
 import com.bbc.dom.bbcdomiweb.dto.Validation;
 import com.bbc.dom.bbcdomiweb.dto.IbAfiliacionesDetDTO;
 import com.bbc.dom.bbcdomiweb.dto.IbDomiciliacionesDetDTO;
-import com.bbc.dom.bbcdomiweb.dto.PaginadorDTO;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.dto.RespuestaDTO;
 import com.bbc.dom.bbcdomiweb.dto.SumarioCargaMasivaDTO;
 import com.bbc.dom.bbcdomiweb.model.FormAfiliacion;
@@ -16,10 +18,7 @@ import com.bbc.dom.bbcdomiweb.model.FormDomiciliacion;
 import com.bbc.dom.bbcdomiweb.model.IbMensajes;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioAfiliaciones;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioPagos;
-import com.bbc.dom.bbcdomiweb.model.MgAfiliacionesOrdenantes;
 import com.bbc.dom.bbcdomiweb.model.MgAfiliacionesPresentadas;
-import com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesEnviadas;
-import com.bbc.dom.bbcdomiweb.model.MgDomiciliacionesOrdenantes;
 import com.bbc.dom.bbcdomiweb.model.MgParametrosOrdenantes;
 import com.bbc.dom.bbcdomiweb.model.UploadedFile;
 import com.bbc.dom.bbcdomiweb.propeties.BancosEnum;
@@ -54,7 +53,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,12 +63,6 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -103,6 +95,8 @@ public class UploadController {
     IbAfiliacionesServices ibAfiliacionesServices;
     @Autowired
     IbDomiciliacionesServices ibDomiciliacionesServices;
+    @Autowired
+    DesencriptacionDao desencriptacionDao;
 
     private final int LONGITUD_DETALLE_CODIGO_ORDENANTE = 4;
     private final int LONGITUD_DETALLE_CLAVE_ORDENANTE = 15;
@@ -144,8 +138,11 @@ public class UploadController {
     private List<IbSumarioAfiliaciones> listIbSumarioAfiliaciones = new ArrayList<>();
     private List<ConsolidadoAfiliacionesDTO> listConsolidadoAfiliaciones = new ArrayList<>();
     private SumarioCargaMasivaDTO sumAfiliaMasive;
-    private String codigoOrdenante = "null";
+    private String codigoOrdenante = "99999";
     private Boolean FlagArchivo = Boolean.TRUE;
+    private String idUser  = "";
+    private String codUser  = "";
+    private String ipClient  = "";
 
     private int id = 0;
     private int idDomi = 0;
@@ -159,6 +156,7 @@ public class UploadController {
     private static final String Fail = "Fail";
     private Util util = new Util();
     String clase = UploadController.class.getName();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
 
     public List<IbSumarioPagos> getListIbSumarioPagos() {
         return listIbSumarioPagos;
@@ -280,7 +278,7 @@ public class UploadController {
         boolean sw = false;
         this.listIbDomiciliacionesDet = new ArrayList<>();
         try {
-            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante, logTable);
             for (FormDomiciliacion formDomiciliacion : this.listFormDomiciliacion) {
                 IbDomiciliacionesDetDTO domiciliacion = new IbDomiciliacionesDetDTO();
                 domiciliacion.setCodOrdenante(this.codigoOrdenante);
@@ -366,11 +364,11 @@ public class UploadController {
                 sumarioPagos.setMontoTotalAprovado(new BigDecimal(total));
 
                 if (sumarioPagos.getNroRegistrosValidados() != BigInteger.ZERO) {
-                    idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
+                    idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos, logTable);
                     if (idSumarioDomi == 0L) {
-                        idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
+                        idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos, logTable);
                         if (idSumarioDomi == 0L) {
-                            idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
+                            idSumarioDomi = ibDomiciliacionesServices.procesarSumario(sumarioPagos, logTable);
                         }
                     }
                 }
@@ -384,22 +382,22 @@ public class UploadController {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     executor.submit(() -> {
                         IbhiloAfiliacionDomiciliacion hiloAfiliacion = new IbhiloAfiliacionDomiciliacion(null, this.listIbDomiciliacionesDet, "DO");
-                        hiloAfiliacion.regis();
+                        hiloAfiliacion.regis(logTable);
                         executor.shutdown();
                     });
                     clearCargaAfiDom();
                 }
-                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Guardado correctamente en el Temp de domiciliacion", "", clase));
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Guardado correctamente en el Temp de domiciliacion", "", clase, logTable));
 
             } else {
                 respuesta.setCodigo("001");
                 respuesta.setDescripcion("Error, no hay data para guardar.");
-                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay data para guardar en el Temp de domiciliacion", "", clase));
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay data para guardar en el Temp de domiciliacion", "", clase, logTable));
             }
         } catch (Exception e) {
             respuesta.setCodigo("001");
             respuesta.setDescripcion("Error en servicio de afiliacion individual en linea. ");
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se guardó correctamente en el Temp de domiciliacion", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se guardó correctamente en el Temp de domiciliacion", e.getMessage(), clase, logTable));
         }
         return respuesta;
     }
@@ -505,7 +503,7 @@ public class UploadController {
                         validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
                     } else {
                         if (i == 1) {
-                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante, logTable);
                         }
                         for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
                             if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
@@ -551,7 +549,7 @@ public class UploadController {
             sumAfiliaMasive.setMontoTotalAprovado(total);
             inp.close();
         } catch (Exception ex) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion2", ex.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion2", ex.getMessage(), clase, logTable));
         }
     }
 
@@ -653,7 +651,7 @@ public class UploadController {
                         validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
                     } else {
                         if (i == 1) {
-                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante, logTable);
                         }
                         for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
                             if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDomi.getIdentificadorPagador().trim())) {
@@ -701,7 +699,7 @@ public class UploadController {
             sumAfiliaMasive.setMontoTotalAprovado(total);
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion", e.getMessage(), clase, logTable));
         }
     }
 
@@ -847,7 +845,7 @@ public class UploadController {
     @RequestMapping(value = "/buscarEmpresaOrdenanteByRif", method = RequestMethod.GET)
     @ResponseBody
     public RespuestaDTO buscarEmpresaOrdenanteByRif(@RequestParam("rif") String rif) {
-        MgParametrosOrdenantes mgParametrosOrdenantes = ibAfiliacionesServices.BuscarEmpresaOrdenanteByRif(rif);
+        MgParametrosOrdenantes mgParametrosOrdenantes = ibAfiliacionesServices.BuscarEmpresaOrdenanteByRif(rif, logTable);
         Integer codOrd = Integer.valueOf(this.codigoOrdenante);
         RespuestaDTO respuesta = new RespuestaDTO();
         if (codOrd != mgParametrosOrdenantes.getCodigoOrdenante()) {
@@ -868,6 +866,22 @@ public class UploadController {
         return mv;
 
     }
+    
+    @RequestMapping(value = "/homeDashboard", method = RequestMethod.GET)
+    public ModelAndView redirectHome(@RequestParam("codOr") String codOr, @RequestParam("field") String field) {
+        ModelAndView mv = new ModelAndView();
+        String semilla  = field;
+        this.codigoOrdenante = codOr.substring(0, 4);
+        this.ipClient = codOr.substring(4, codOr.length());
+        this.ipClient = desencriptacionDao.desencrypIp(this.ipClient);
+        logTable = new LogDTO.LogTableDTO("", "", ipClient);
+        ClienteDTO cliente = desencriptacionDao.desencriptar2(semilla, logTable);
+        this.idUser = cliente.getUserID();
+        this.codUser = cliente.getNroAbank();
+        logTable = new LogDTO.LogTableDTO(idUser, codUser, ipClient);
+        mv.setViewName("main/home");
+        return mv;
+    }
 
     @RequestMapping(value = "/findAfiliaByNumDoc", method = RequestMethod.GET)
     @ResponseBody
@@ -875,7 +889,7 @@ public class UploadController {
         int flag = 0;
         FormAfiliacion Afiliado = new FormAfiliacion();
         List<MgAfiliacionesPresentadas> afiliaciones = new ArrayList<MgAfiliacionesPresentadas>();
-        afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion(numDoc, this.codigoOrdenante);
+        afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion(numDoc, this.codigoOrdenante, logTable);
         FormAfiliacion afliacion = new FormAfiliacion();
         for (MgAfiliacionesPresentadas afiliacione : afiliaciones) {
             afliacion.setCtaBcoDestino(afiliacione.getCuentaPagador());
@@ -895,7 +909,7 @@ public class UploadController {
         int flag = 0;
         FormAfiliacion Afiliado = new FormAfiliacion();
         List<MgAfiliacionesPresentadas> afiliaciones = new ArrayList<MgAfiliacionesPresentadas>();
-        afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion2(numDoc, this.codigoOrdenante);
+        afiliaciones = ibAfiliacionesServices.BuscarAfiliadoPorIdentificacion2(numDoc, this.codigoOrdenante, logTable);
         FormAfiliacion afliacion = new FormAfiliacion();
         for (MgAfiliacionesPresentadas afiliacione : afiliaciones) {
             afliacion.setCtaBcoDestino(afiliacione.getCuentaPagador());
@@ -1023,11 +1037,11 @@ public class UploadController {
                 sumarioAfiliaciones.setNroRegistrosRechazados(new BigInteger("0"));
                 sumarioAfiliaciones.setNroRegistrosValidados(new BigInteger("" + this.listIbAfiliacionesDet.size()));
 
-                idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones);
+                idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones, logTable);
                 if (idSumarioAfi == 0L) {
-                    idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones);
+                    idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones, logTable);
                     if (idSumarioAfi == 0L) {
-                        idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones);
+                        idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones, logTable);
                     }
                 }
                 if (idSumarioAfi != 0L) {
@@ -1041,25 +1055,25 @@ public class UploadController {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     executor.submit(() -> {
                         IbhiloAfiliacionDomiciliacion hiloAfiliacion = new IbhiloAfiliacionDomiciliacion(this.listIbAfiliacionesDet, null, "AF");
-                        hiloAfiliacion.regis();
+                        hiloAfiliacion.regis(logTable);
                         executor.shutdown();
                     });
                     clearCargaAfiDom();
-                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Se procesó el temporal de afiliaciones correctamente", "", clase));
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Se procesó el temporal de afiliaciones correctamente", "", clase, logTable));
                 } else {
                     respuesta.setCodigo("001");
                     respuesta.setDescripcion("Error al procesar la afiliacion intentelo nuevamente.");
-                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Error al procesar la afiliacion intentelo nuevamente", "", clase));
+                    LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Error al procesar la afiliacion intentelo nuevamente", "", clase, logTable));
                 }
             } else {
                 respuesta.setCodigo("001");
                 respuesta.setDescripcion("Error, no hay afiliaciones para procesar.");
-                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay afiliaciones para procesar", "", clase));
+                LOGGER.info(util.createLog(Level.INFO.toString(), Success, "No hay afiliaciones para procesar", "", clase, logTable));
             }
         } catch (Exception e) {
             respuesta.setCodigo("001");
             respuesta.setDescripcion("Error en servicio de afiliación individual en linea");
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en servicio de afiliación individual en linea", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en servicio de afiliación individual en linea", e.getMessage(), clase, logTable));
         }
 
         return respuesta;
@@ -1083,7 +1097,7 @@ public class UploadController {
                 return model;
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error uploadAfiliacionMasiva", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error uploadAfiliacionMasiva", e.getMessage(), clase, logTable));
             ModelAndView model = new ModelAndView("main/home");
             return model;
         }
@@ -1122,9 +1136,9 @@ public class UploadController {
             sumarioAfiliaciones.setNroRegistrosProcesar(new BigInteger("" + sumAfiliaMasive.getNumRegProcesados()));
             sumarioAfiliaciones.setNroRegistrosRechazados(new BigInteger("" + sumAfiliaMasive.getNumRegRechazados()));
             sumarioAfiliaciones.setNroRegistrosValidados(new BigInteger("" + sumAfiliaMasive.getNumRegValidados()));
-            idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones);
+            idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones, logTable);
             if (idSumarioAfi == 0L) {
-                idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones);
+                idSumarioAfi = ibAfiliacionesServices.procesarSumarioAfiliaciones(sumarioAfiliaciones, logTable);
             }
             if (idSumarioAfi != 0L) {
                 for (IbAfiliacionesDetDTO ibAfiliacionesDetDTO : listIbAfiliacionesDet) {
@@ -1135,7 +1149,7 @@ public class UploadController {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 executor.submit(() -> {
                     IbhiloAfiliacionDomiciliacion hiloAfiliacion = new IbhiloAfiliacionDomiciliacion(this.listIbAfiliacionesDet, null, "AF");
-                    hiloAfiliacion.regis();
+                    hiloAfiliacion.regis(logTable);
                     executor.shutdown();
                 });
                 FlagArchivo = Boolean.TRUE;
@@ -1165,9 +1179,9 @@ public class UploadController {
             sumarioPagos.setNroRegistrosValidados(new BigInteger("" + sumAfiliaMasive.getNumRegValidados()));
             sumarioPagos.setMontoTotalAprovado(new BigDecimal("" + sumAfiliaMasive.getMontoTotalAprovado()));
             if (sumarioPagos.getNroRegistrosValidados() != BigInteger.ZERO) {
-                idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
+                idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos, logTable);
                 if (idSumarioDomic == 0L) {
-                    idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos);
+                    idSumarioDomic = ibDomiciliacionesServices.procesarSumario(sumarioPagos, logTable);
                 }
             }
             if (idSumarioDomic != 0L) {
@@ -1177,7 +1191,7 @@ public class UploadController {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 executor.submit(() -> {
                     IbhiloAfiliacionDomiciliacion hiloDomiciliacion = new IbhiloAfiliacionDomiciliacion(null, this.listIbDomiciliacionesDet, "DO");
-                    hiloDomiciliacion.regis();
+                    hiloDomiciliacion.regis(logTable);
                     executor.shutdown();
                 });
 
@@ -1205,10 +1219,9 @@ public class UploadController {
     }
 
     public void uploadExelAfiliacion2(String inputFilePath) {
-        InputStream inp = null;
+        listIbAfiliacionesDet.clear();
         try {
-            inp = new FileInputStream(inputFilePath);
-            XSSFWorkbook libro = new XSSFWorkbook(inp); //Declare XSSF WorkBook
+            XSSFWorkbook libro = new XSSFWorkbook(new FileInputStream(inputFilePath)); //Declare XSSF WorkBook
             XSSFSheet hoja = libro.getSheetAt(0); //sheet can be used as common for XSSF and HSSF
             int rows = hoja.getLastRowNum();
             int tregisVal = 0, tregisRecha = 0;
@@ -1282,7 +1295,7 @@ public class UploadController {
                     listIbAfiliacionesDet.add(newAfi);
                 }
             }
-            listIbAfiliacionesDet.addAll(listIbAfiliacionesDetError);
+           // listIbAfiliacionesDet.addAll(listIbAfiliacionesDetError);
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
             sumAfiliaMasive.setFechaCargaArchivo(new Date());
             sumAfiliaMasive.setFechaString(getFechaMod(new Date()));
@@ -1290,9 +1303,8 @@ public class UploadController {
             sumAfiliaMasive.setNumRegProcesados(tregisTotal);
             sumAfiliaMasive.setNumRegValidados(tregisVal);
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
-            inp.close();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion2", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion2", e.getMessage(), clase, logTable));
         }
     }
 
@@ -1395,7 +1407,7 @@ public class UploadController {
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
 
         } catch (Exception ex) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion", ex.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en subiendo el archivo uploadExelAfiliacion", ex.getMessage(), clase, logTable));
         }
     }
 
@@ -1451,7 +1463,7 @@ public class UploadController {
     }
 
     public Boolean validarSecuencia(String archivo, String operacion) {
-        return (ibDomiciliacionesServices.BuscarSumario(archivo, operacion).size() > 0);
+        return (ibDomiciliacionesServices.BuscarSumario(archivo, operacion, logTable).size() > 0);
     }
 
     public RespuestaDTO procesoArchivo(MultipartFile file, String operacion) {
@@ -1635,7 +1647,7 @@ public class UploadController {
                                         validado.setErrores("Codigo ordenante del registro no pertenece a la empresa que esta procesando el archivo.");
                                     } else {
                                         if (i == 1) {
-                                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante);
+                                            mgDetalleAfiliacionesDTO = ibAfiliacionesServices.BuscarAfiliadoPresentadasByOrdenante(this.codigoOrdenante, logTable);
                                         }
                                         for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
                                             if (obj.getSituacion().equalsIgnoreCase("P") /*obj.getContrato().trim().equals(newDom.getRefContrato())*/ && obj.getIdentificacionPagador().trim().equals(newDom.getIdentificadorPagador().trim())) {
@@ -1682,7 +1694,7 @@ public class UploadController {
                 }
 
             } catch (IOException e) {
-                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en el proceso general del archivo procesoArchivo", e.getMessage(), clase));
+                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en el proceso general del archivo procesoArchivo", e.getMessage(), clase, logTable));
             }
 
         } else {
@@ -1797,9 +1809,10 @@ public class UploadController {
     @ResponseBody
     public List<ConsolidadoAfiliacionesDTO> consolidadoAfiliaciones() {
         try {
-            listConsolidadoAfiliaciones = ibAfiliacionesServices.ListarConsolidadosDeAfiliaciones(Integer.valueOf(this.codigoOrdenante));
+            listConsolidadoAfiliaciones = ibAfiliacionesServices.ListarConsolidadosDeAfiliaciones(Integer.valueOf(this.codigoOrdenante), logTable);
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Listado de Consolidados de Afiliaciones exitoso", "", clase, logTable));
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase, logTable));
         }
         return listConsolidadoAfiliaciones;
     }
@@ -1809,8 +1822,8 @@ public class UploadController {
     public List<DetalleAfiliacionesDTO> detalleAfiliaciones(@RequestParam("idLote") String idLote) {
         List<DetalleAfiliacionesDTO> detalleList = null;
         try {
-            List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes();
-            detalleList = ibAfiliacionesServices.BuscarAfiliadoPorlote(Long.valueOf(idLote), this.codigoOrdenante);
+            List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes(logTable);
+            detalleList = ibAfiliacionesServices.BuscarAfiliadoPorlote(Long.valueOf(idLote), this.codigoOrdenante, logTable);
             for (DetalleAfiliacionesDTO detalleAfiliacionesDTO : detalleList) {
                 if (detalleAfiliacionesDTO.getSituacion().equals("P")) {
                     detalleAfiliacionesDTO.setCodigoResultado("APROBADA");
@@ -1827,8 +1840,9 @@ public class UploadController {
                     detalleAfiliacionesDTO.setContrato(detalleAfiliacionesDTO.getContrato().replaceFirst("^0*", ""));
                 }
             }
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Listado de Detalle de Afiliaciones exitoso", "", clase, logTable));
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de Afiliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de Afiliaciones", e.getMessage(), clase, logTable));
         }
         return detalleList;
     }
@@ -1838,9 +1852,10 @@ public class UploadController {
     public List<ConsolidadoDomiciliacionesDTO> cosolidadoDomiciliaciones() {
         List<ConsolidadoDomiciliacionesDTO> list = new ArrayList<>();
         try {
-            list = ibDomiciliacionesServices.ListarConsolidadosDedominciliaciones(Integer.valueOf(this.codigoOrdenante));
+            list = ibDomiciliacionesServices.ListarConsolidadosDedominciliaciones(Integer.valueOf(this.codigoOrdenante), logTable);
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Listado de Consolidado de Domiciliaciones exitoso", "", clase, logTable));
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Domiciliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Domiciliaciones", e.getMessage(), clase, logTable));
         }
         return list;
     }
@@ -1849,8 +1864,8 @@ public class UploadController {
     @ResponseBody
     public List<DetalleDomiciliacionesDTO> detalleDomiciliaciones(@RequestParam("idLote") String idLote) {
         DecimalFormat formateador = new DecimalFormat("0.00");
-        List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes();
-        List<DetalleDomiciliacionesDTO> listDomicilia = ibDomiciliacionesServices.BuscarDomiciliacionesByLote(Long.valueOf(idLote), this.codigoOrdenante);
+        List<IbMensajes> mensajes = ibAfiliacionesServices.CargarMensajes(logTable);
+        List<DetalleDomiciliacionesDTO> listDomicilia = ibDomiciliacionesServices.BuscarDomiciliacionesByLote(Long.valueOf(idLote), this.codigoOrdenante, logTable);
         try {
             for (DetalleDomiciliacionesDTO detalleDomiciliacionesDTO : listDomicilia) {
                 String as = null;
@@ -1873,8 +1888,9 @@ public class UploadController {
                 }
                 detalleDomiciliacionesDTO.setMonto(detalleDomiciliacionesDTO.getMonto().replace(",", "."));
             }
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Listado de Consolidado de Domiciliaciones exitoso", "", clase, logTable));
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de domiciliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en detalle de domiciliaciones", e.getMessage(), clase, logTable));
         }
         return listDomicilia;
     }

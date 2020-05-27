@@ -1,9 +1,9 @@
 package com.bbc.dom.bbcdomiweb.services;
 
-import com.bbc.dom.bbcdomiweb.controller.UploadController;
 import com.bbc.dom.bbcdomiweb.dto.ConsolidadoAfiliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.DetalleAfiliacionesDTO;
 import com.bbc.dom.bbcdomiweb.dto.IbAfiliacionesDetDTO;
+import com.bbc.dom.bbcdomiweb.dto.LogDTO;
 import com.bbc.dom.bbcdomiweb.model.IbMensajes;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioAfiliaciones;
 import com.bbc.dom.bbcdomiweb.model.IbSumarioPagos;
@@ -17,9 +17,6 @@ import com.bbc.dom.bbcdomiweb.repository.SumarioAfiliacionesRepository;
 import com.bbc.dom.bbcdomiweb.repository.SumarioPagosRepository;
 import com.bbc.dom.bbcdomiweb.util.Util;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +48,7 @@ public class IbAfiliacionesServices extends Util {
     private static final String Fail = "Fail";
     private Util util = new Util();
     String clase = IbAfiliacionesServices.class.getName();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
 
     EntityManagerFactory emf = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em = emf.createEntityManager();
@@ -58,11 +56,11 @@ public class IbAfiliacionesServices extends Util {
     EntityManagerFactory emf1 = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em1 = emf1.createEntityManager();
 
-    public synchronized Boolean procesarCarga(List<IbAfiliacionesDetDTO> afiliacionesList) {
+    public synchronized Boolean procesarCarga(List<IbAfiliacionesDetDTO> afiliacionesList, LogDTO.LogTableDTO logTable) {
         Boolean flag = Boolean.TRUE;
         AfiliacionRepository ar = new AfiliacionRepository();
         ar.setEntityManager(em);
-        Date fechaValida = BuscarFechaValida();
+        Date fechaValida = BuscarFechaValida(logTable);
         int i = 0;
         try {
             StringBuilder consultaNextval = new StringBuilder();
@@ -88,39 +86,38 @@ public class IbAfiliacionesServices extends Util {
                     afilia.setMgAfiliacionesOrdenantesPK(afiPK);
                     afilia.setOrigenCarga("W");
                     afilia.setUsuarioCarga("BCDOMIC");
+                    afilia.setMotivoRechazo(ibAfiliacionesDetDTO.getErrorInLine());
                     ar.create(afilia);
                 } catch (Exception e) {
-                    LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Afiliaciones", e.getMessage(), clase));
-                    //Tabla
+                    LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Afiliaciones", e.getMessage(), clase, logTable));
                     flag = Boolean.FALSE;
                 }
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Afiliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando carga de Afiliaciones", e.getMessage(), clase, logTable));
             flag = Boolean.FALSE;
         }
         if (flag) {
-            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de Afiliaciones exitoso", "", clase));
+            LOGGER.info(util.createLog(Level.INFO.toString(), Success, "Proceso de carga de Afiliaciones exitoso", "", clase, logTable));
         }
         return flag;
     }
 
-    public Boolean procesarSumario(IbSumarioPagos sumarioPagos) {
+    public Boolean procesarSumario(IbSumarioPagos sumarioPagos, LogDTO.LogTableDTO logTable) {
         Boolean flag = Boolean.TRUE;
         SumarioPagosRepository sp = new SumarioPagosRepository();
         sp.setEntityManager(em);
         try {
             sp.create(sumarioPagos);
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Sumario de Pagos procesado exitosamente", "", clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Sumario de Pagos procesado exitosamente", "", clase, logTable));
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando Sumario de Pagos", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error procesando Sumario de Pagos", e.getMessage(), clase, logTable));
             flag = Boolean.FALSE;
         }
         return null;
     }
 
-    public Long procesarSumarioAfiliaciones(IbSumarioAfiliaciones sumarioAfiliaciones) {
+    public Long procesarSumarioAfiliaciones(IbSumarioAfiliaciones sumarioAfiliaciones, LogDTO.LogTableDTO logTable) {
         Long flag = 0L;
         SumarioAfiliacionesRepository sa = new SumarioAfiliacionesRepository();
         sa.setEntityManager(em);
@@ -138,17 +135,16 @@ public class IbAfiliacionesServices extends Util {
                     .getSingleResult();
             flag = sumarioAfi.getId();
         } catch (ConstraintViolationException e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase, logTable));
             flag = 1L;
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase, logTable));
             flag = 0L;
         }
         return flag;
     }
 
-    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorIdentificacion(String numDocumento, String codOrdenante) {
+    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorIdentificacion(String numDocumento, String codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         if ((numDocumento == null)) {
             numDocumento = "";
@@ -167,13 +163,12 @@ public class IbAfiliacionesServices extends Util {
                     .setParameter("numDocumento", numDocumento)
                     .getResultList();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla MgAfiliacionesPresentadas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla MgAfiliacionesPresentadas", e.getMessage(), clase, logTable));
         }
         return mgAfiliacionesPresentadas;
     }
 
-    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorIdentificacion2(String numDocumento, String codOrdenante) {
+    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorIdentificacion2(String numDocumento, String codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         if ((numDocumento == null)) {
             numDocumento = "";
@@ -193,13 +188,12 @@ public class IbAfiliacionesServices extends Util {
                     .setParameter("numDocumento", numDocumento)
                     .getResultList();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla MgAfiliacionesPresentadas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla MgAfiliacionesPresentadas", e.getMessage(), clase, logTable));
         }
         return mgAfiliacionesPresentadas;
     }
 
-    public List<IbSumarioAfiliaciones> ListarConsolidadosDeAfiliaciones2(int codOrdenante) {
+    public List<IbSumarioAfiliaciones> ListarConsolidadosDeAfiliaciones2(int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<IbSumarioAfiliaciones> ibSumarioAfiliacioness = null;
         try {
             StringBuilder consulta = new StringBuilder();
@@ -210,13 +204,12 @@ public class IbAfiliacionesServices extends Util {
                     .setParameter("codigoOrdenante", codOrdenante)
                     .getResultList();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar ls tabla IbSumarioAfiliaciones", e.getMessage(), clase, logTable));
         }
         return ibSumarioAfiliacioness;
     }
 
-    public List<ConsolidadoAfiliacionesDTO> ListarConsolidadosDeAfiliaciones(int codOrdenante) {
+    public List<ConsolidadoAfiliacionesDTO> ListarConsolidadosDeAfiliaciones(int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<ConsolidadoAfiliacionesDTO> consolidadoAfiliacionesDTO = new ArrayList<>();;
         try {
             // Ordenantes
@@ -287,16 +280,15 @@ public class IbAfiliacionesServices extends Util {
                     sw = false;
                 }
             } catch (Exception e) {
-                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase));
-                //Tabla
+                LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase, logTable));
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al listar Consolidados de Afiliaciones", e.getMessage(), clase, logTable));
         }
         return consolidadoAfiliacionesDTO;
     }
 
-    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorFechas(String startDate, String endDate, int codOrdenante) {
+    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorFechas(String startDate, String endDate, int codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         Date fechaInicio = new Date();
         Date fechaFin = new Date();
@@ -342,13 +334,12 @@ public class IbAfiliacionesServices extends Util {
             }
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al buscar afiliado por fechas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al buscar afiliado por fechas", e.getMessage(), clase, logTable));
         }
         return mgAfiliacionesPresentadas;
     }
 
-    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorlote2(Long numLote, String codOrdenante) {
+    public List<MgAfiliacionesPresentadas> BuscarAfiliadoPorlote2(Long numLote, String codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         try {
             StringBuilder consulta = new StringBuilder();
@@ -361,13 +352,12 @@ public class IbAfiliacionesServices extends Util {
                     .getResultList();
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error consultar la tabla MgAfiliacionesPresentadas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error consultar la tabla MgAfiliacionesPresentadas", e.getMessage(), clase, logTable));
         }
         return mgAfiliacionesPresentadas;
     }
 
-    public List<IbMensajes> CargarMensajes() {
+    public List<IbMensajes> CargarMensajes (LogDTO.LogTableDTO logTable) {
         List<IbMensajes> ibMensajes = null;
         try {
             StringBuilder consulta = new StringBuilder();
@@ -376,13 +366,12 @@ public class IbAfiliacionesServices extends Util {
                     .getResultList();
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error consultar la tabla IbMensajes", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error consultar la tabla IbMensajes", e.getMessage(), clase, logTable));
         }
         return ibMensajes;
     }
 
-    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPorlote(Long numLote, String codOrdenante) {
+    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPorlote(Long numLote, String codOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesOrdenantes> mgAfiliacionesOrdenantes = null;
         List<DetalleAfiliacionesDTO> mgDetalleAfiliacionesDTO = new ArrayList<>();
         List<DetalleAfiliacionesDTO> mgDetalleAfiliacionesDTOAux = new ArrayList<>();
@@ -418,7 +407,7 @@ public class IbAfiliacionesServices extends Util {
 
                 mgDetalleAfiliacionesDTO.add(detAfi);
             }
-            mgDetalleAfiliacionesDTOAux = this.BuscarAfiliadoPresentadas(numLote);
+            mgDetalleAfiliacionesDTOAux = this.BuscarAfiliadoPresentadas(numLote, logTable);
             boolean sw = false;
             if (mgDetalleAfiliacionesDTOAux.size() > 0) {
                 for (DetalleAfiliacionesDTO detalleAfiliacionesDTO : mgDetalleAfiliacionesDTO) {
@@ -438,13 +427,12 @@ public class IbAfiliacionesServices extends Util {
                 data.addAll(mgDetalleAfiliacionesDTO);
             }
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al buscar afiliados por lote", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al buscar afiliados por lote", e.getMessage(), clase, logTable));
         }
         return data;
     }
 
-    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPresentadas(Long numLote) {
+    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPresentadas(Long numLote, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         List<DetalleAfiliacionesDTO> mgDetalleAfiliacionesDTO = new ArrayList<>();
         try {
@@ -456,8 +444,7 @@ public class IbAfiliacionesServices extends Util {
                     .getResultList();
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgAfiliacionesPresentadas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgAfiliacionesPresentadas", e.getMessage(), clase, logTable));
         }
 
         for (MgAfiliacionesPresentadas mgAfiliacionesPresentada : mgAfiliacionesPresentadas) {
@@ -477,7 +464,7 @@ public class IbAfiliacionesServices extends Util {
         return mgDetalleAfiliacionesDTO;
     }
 
-    public Date BuscarFechaValida() {
+    public Date BuscarFechaValida(LogDTO.LogTableDTO logTable) {
         MgCalendario a = new MgCalendario();
         String var = "BCC";
         try {
@@ -488,14 +475,13 @@ public class IbAfiliacionesServices extends Util {
                     .setParameter("codigoAplicacion", var)
                     .getSingleResult();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgCalendario", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgCalendario", e.getMessage(), clase, logTable));
         }
 
         return a.getFechaHoy();
     }
 
-    public MgParametrosOrdenantes BuscarEmpresaOrdenanteByRif(String numDocumento) {
+    public MgParametrosOrdenantes BuscarEmpresaOrdenanteByRif(String numDocumento, LogDTO.LogTableDTO logTable) {
         MgParametrosOrdenantes mgParametrosOrdenante = null;
         if ((numDocumento == null)) {
             numDocumento = "";
@@ -508,15 +494,14 @@ public class IbAfiliacionesServices extends Util {
                     .setParameter("rifOrdenante", numDocumento)
                     .getSingleResult();
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgParametrosOrdenantes", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgParametrosOrdenantes", e.getMessage(), clase, logTable));
             mgParametrosOrdenante = new MgParametrosOrdenantes();
         }
 
         return mgParametrosOrdenante;
     }
 
-    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPresentadasByOrdenante(String codigoOrdenante) {
+    public List<DetalleAfiliacionesDTO> BuscarAfiliadoPresentadasByOrdenante(String codigoOrdenante, LogDTO.LogTableDTO logTable) {
         List<MgAfiliacionesPresentadas> mgAfiliacionesPresentadas = null;
         List<DetalleAfiliacionesDTO> mgDetalleAfiliacionesDTO = new ArrayList<>();
         try {
@@ -529,8 +514,7 @@ public class IbAfiliacionesServices extends Util {
                     .getResultList();
 
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgAfiliacionesPresentadas", e.getMessage(), clase));
-            //Tabla
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error al consultar MgAfiliacionesPresentadas", e.getMessage(), clase, logTable));
         }
         for (MgAfiliacionesPresentadas mgAfiliacionesPresentada : mgAfiliacionesPresentadas) {
 

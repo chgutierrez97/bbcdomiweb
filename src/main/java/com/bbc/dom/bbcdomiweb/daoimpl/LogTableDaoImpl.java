@@ -30,6 +30,7 @@ public class LogTableDaoImpl {
     private static final String Fail = "Fail";
     private Util util = new Util();
     String clase = LogTableDaoImpl.class.getName();
+    private LogDTO.LogTableDTO logTable = new LogDTO.LogTableDTO("", "", "");
     EntityManagerFactory emf = Persistence.createEntityManagerFactory("bcdomicPU");
     EntityManager em = emf.createEntityManager();
 
@@ -42,8 +43,8 @@ public class LogTableDaoImpl {
             BigDecimal secuencia = (BigDecimal) em.createNativeQuery(consultaNextval.toString()).getSingleResult();
             Long nextval = secuencia.longValue();
             logDomic.setIdlog(nextval);
-            logDomic.setIduser("");
-            logDomic.setCoduser("");
+            logDomic.setIduser(log.getIdUser());
+            logDomic.setCoduser(log.getCodUser());
             logDomic.setEventtype(log.getLevel());
             logDomic.setStatus(log.getStatus());
             logDomic.setTrndate(log.getDate());
@@ -54,7 +55,7 @@ public class LogTableDaoImpl {
             sr.setEntityManager(em);
             sr.persist(logDomic);
         } catch (Exception e) {
-            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Erro al guardar log en la tabla", e.getMessage(), clase));
+            LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Erro al guardar log en la tabla", e.getMessage(), clase, logTable));
         }
     }
 
