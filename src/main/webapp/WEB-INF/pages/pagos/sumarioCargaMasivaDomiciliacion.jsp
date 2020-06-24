@@ -80,7 +80,7 @@
                                 <th scope="col">Total registros</th>
                                 <th scope="col">Registros Rechazados</th>
                                 <th scope="col">Registros Aprobados</th>
-                                <th scope="col">Total Monto Aprobado</th>
+                                <th scope="col">Monto Total Archivo</th>
 
                             </tr>
                         </thead>

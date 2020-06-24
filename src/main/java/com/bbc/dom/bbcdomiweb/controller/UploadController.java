@@ -422,6 +422,7 @@ public class UploadController {
 
     public void uploadExelDomiciliacion2(String inputFilePath) throws FileNotFoundException, IOException {
         InputStream inp = null;
+        listIbDomiciliacionesDet.clear();
         try {
             List<DetalleAfiliacionesDTO> mgDetalleAfiliacionesDTO = new ArrayList<>();
             boolean sw = false;
@@ -434,6 +435,9 @@ public class UploadController {
             int tregisTotal = 0;
             int filaNum = 1;
             Double total = 0D;
+            Double totalProcesado = 0D;
+            String montoIndividual;
+            DecimalFormat formateador = new DecimalFormat("0.00");
             for (int i = 1; i <= rows; ++i) {
                 Validation validado = new Validation();
                 IbDomiciliacionesDetDTO newDomi = new IbDomiciliacionesDetDTO();
@@ -452,8 +456,18 @@ public class UploadController {
                 String link10 = ("" + q.getCell(10)).trim();
                 String link11 = ("" + q.getCell(11)).trim();
                 String link12 = ("" + q.getCell(12)).trim();
+                
+                if(link5.contains("E")){
+                   link5 = BigDecimal.valueOf(Double.valueOf(link5)).toString();
+                } 
                 link5 = link5.replace(",", ".");
                 String[] mo = link5.split("\\.");
+                String montoValor = link5.replace(".", "");
+                if(mo.length == 2){
+                    if(mo[1].length() < 2){
+                        montoValor = montoValor + "0";
+                    }
+                }
                 if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty()
                         && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty() && !link9.isEmpty() && !link10.isEmpty() && !link11.isEmpty() && !link12.isEmpty()) {
                     tregisTotal++;
@@ -493,7 +507,7 @@ public class UploadController {
                         nombre = nombre.substring(0, 29);
                     }
 
-                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(mo[0], LONGITUD_DETALLE_DOM_MONTO) + mo[0] + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
+                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(montoValor, LONGITUD_DETALLE_DOM_MONTO) + montoValor + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
 
                     validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
 
@@ -537,6 +551,14 @@ public class UploadController {
                     filaNum++;
                     int longitud = link5.trim().length();
                     total = total + Integer.valueOf(mo[0]);
+                    if(mo.length == 2){
+                        montoIndividual = formateador.format(Double.valueOf(mo[0] + "." + mo[1]));
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", ".")); 
+                    }
+                    else{
+                        montoIndividual = formateador.format(Double.valueOf(mo[0].substring(0, (mo[0].length() - 2)) + "." + mo[0].substring((mo[0].length() - 2), mo[0].length())));
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));                        
+                    }
                 }
             }
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
@@ -547,6 +569,7 @@ public class UploadController {
             sumAfiliaMasive.setNumRegValidados(tregisVal);
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
             sumAfiliaMasive.setMontoTotalAprovado(total);
+            sumAfiliaMasive.setMontoTotalProcesado(totalProcesado);
             inp.close();
         } catch (Exception ex) {
             LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion2", ex.getMessage(), clase, logTable));
@@ -566,6 +589,9 @@ public class UploadController {
             int tregisVal = 0, tregisRecha = 0;
             int tregisTotal = 0;
             Double total = 0D;
+            Double totalProcesado = 0D;
+            String montoIndividual;
+            DecimalFormat formateador = new DecimalFormat("0.00");
             for (int i = 1; i <= rows; i++) {
 
                 Validation validado = new Validation();
@@ -591,7 +617,8 @@ public class UploadController {
                 String link2 = linkCel2.getStringCellValue().trim();
                 String link3 = linkCel3.getStringCellValue().trim();
                 String link4 = linkCel4.getStringCellValue().trim();
-                String link5 = linkCel5.getStringCellValue().trim();
+           //     String link5 = linkCel5.getStringCellValue().trim();
+                String link5 = linkCel5.toString().trim();
                 String link6 = linkCel6.getStringCellValue().trim();
                 String link7 = linkCel7.getStringCellValue().trim();
                 String link8 = linkCel8.getStringCellValue().trim();
@@ -599,8 +626,18 @@ public class UploadController {
                 String link10 = linkCel10.getStringCellValue().trim();
                 String link11 = linkCel11.getStringCellValue().trim();
                 String link12 = linkCel12.getStringCellValue().trim();
+                
+                if(link5.contains("E")){
+                   link5 = BigDecimal.valueOf(Double.valueOf(link5)).toString();
+                }                        
                 link5 = link5.replace(",", ".");
                 String[] mo = link5.split("\\.");
+                String montoValor = link5.replace(".", "");
+                if(mo.length == 2){
+                    if(mo[1].length() < 2){
+                        montoValor = montoValor + "0";
+                    }
+                }
                 if (!link0.isEmpty() && !link1.isEmpty() && !link2.isEmpty() && !link3.isEmpty() && !link4.isEmpty() && !link5.isEmpty()
                         && !link6.isEmpty() && !link7.isEmpty() && !link8.isEmpty() && !link9.isEmpty() && !link10.isEmpty() && !link11.isEmpty() && !link12.isEmpty()) {
 
@@ -641,7 +678,7 @@ public class UploadController {
                         nombre = nombre.substring(0, 29);
                     }
 
-                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(mo[0], LONGITUD_DETALLE_DOM_MONTO) + mo[0] + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + "   " + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
+                    String linea = link0.trim() + agregarCeros(link1.trim(), LONGITUD_DETALLE_DOM_CLAVE_ORDENANTE) + link1.trim() + "020001" + link4.trim() + agregarCeros(montoValor, LONGITUD_DETALLE_DOM_MONTO) + montoValor + link6.trim() + link7.trim() + agregarEspacio(link7.trim(), LONGITUD_NUMERO_PAGADOR) + link8.trim() + agregarEspacio(link8.trim(), LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR) + link9.trim() + agregarEspacio(link9.trim(), LONGITUD_DETALLE_DOM_REFERENCIA_CONTRATO) + link10.trim() + agregarCeros(link10.trim(), LONGITUD_DETALLE_DOM_FACTURA_NUMERO) + link11.trim() + link12.trim();
 
                     validado = validatorCargaDomiciliaciones.getValidaDomiciliacion(newDomi);
 
@@ -686,6 +723,14 @@ public class UploadController {
                     filaNum++;
                     int longitud = link5.trim().length();
                     total = total + Integer.valueOf(mo[0]);
+                    if(mo.length == 2){
+                        montoIndividual = formateador.format(Double.valueOf(mo[0] + "." + mo[1]));
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", ".")); 
+                    }
+                    else{
+                        montoIndividual = formateador.format(Double.valueOf(mo[0].substring(0, (mo[0].length() - 2)) + "." + mo[0].substring((mo[0].length() - 2), mo[0].length())));
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));                        
+                    }                    
                 }
             }
 
@@ -697,6 +742,7 @@ public class UploadController {
             sumAfiliaMasive.setNumRegValidados(tregisVal);
             sumAfiliaMasive.setNumRegRechazados(tregisRecha);
             sumAfiliaMasive.setMontoTotalAprovado(total);
+            sumAfiliaMasive.setMontoTotalProcesado(totalProcesado);
 
         } catch (Exception e) {
             LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "No se pudo cargar el archivo en uploadExelDomiciliacion", e.getMessage(), clase, logTable));
@@ -1113,8 +1159,8 @@ public class UploadController {
     @ResponseBody
     public SumarioCargaMasivaDTO getSumarioDomicMasiva() {
         DecimalFormat formateador = new DecimalFormat("0.00");
-        String as = this.sumAfiliaMasive.getMontoTotalAprovado().toString();
-        String monto[] = this.sumAfiliaMasive.getMontoTotalAprovado().toString().split("\\.");
+        String as = this.sumAfiliaMasive.getMontoTotalProcesado().toString();
+        String monto[] = this.sumAfiliaMasive.getMontoTotalProcesado().toString().split("\\.");
         as = as.replaceAll("[,.]", "");
         String m = monto[0] + "." + monto[1];
         Double mon = Double.valueOf(m);
@@ -1612,6 +1658,8 @@ public class UploadController {
                             Double montoTotalDomic = 0D;
                             Double montoTotalDomicVal = 0D;
                             Double montoTotalDomicRech = 0D;
+                            String montoIndividual = null;
+                            DecimalFormat formateador = new DecimalFormat("0.00");
                             while ((linea = br.readLine()) != null) {
                                 Validation validado = new Validation();
                                 int poss = 0;
@@ -1664,8 +1712,11 @@ public class UploadController {
                                     sw = false;
                                     newDom.setStatus(validado.getStatusRegistro());
                                     newDom.setErrorInLine(validado.getErrores());
+                                    
+                                    String as = newDom.getMonto().trim();
+                                    montoIndividual = formateador.format(Double.valueOf(as.substring(0, (as.length() - 2)) + "." + as.substring((as.length() - 2), as.length())));
 
-                                    montoTotalDomic = montoTotalDomic + Double.valueOf(newDom.getMonto());
+                                    montoTotalDomic = montoTotalDomic + Double.valueOf(montoIndividual.replace(",", "."));
 
                                     if (validado.getStatusRegistro()) {
                                         regisValDomic++;
@@ -1693,7 +1744,7 @@ public class UploadController {
                     }
                 }
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.info(util.createLog(Level.SEVERE.toString(), Fail, "Error en el proceso general del archivo procesoArchivo", e.getMessage(), clase, logTable));
             }
 
@@ -1873,7 +1924,7 @@ public class UploadController {
                     as = detalleDomiciliacionesDTO.getMonto().trim();
                     detalleDomiciliacionesDTO.setMonto(as);
                 } else {
-                    as = Integer.valueOf(detalleDomiciliacionesDTO.getMonto().trim()).toString();
+                    as = detalleDomiciliacionesDTO.getMonto().trim();
                     detalleDomiciliacionesDTO.setMonto(formateador.format(Double.valueOf(as.substring(0, (as.length() - 2)) + "." + as.substring((as.length() - 2), as.length()))));
                 }
                 if (detalleDomiciliacionesDTO.getSituacion().equals("X") || detalleDomiciliacionesDTO.getSituacion().equals("R") || (detalleDomiciliacionesDTO.getSituacion().equals("O") && detalleDomiciliacionesDTO.getCobroExitoso().endsWith("N"))) {
