@@ -298,6 +298,10 @@ public class UploadController {
                 domiciliacion.setNombrePagador(formDomiciliacion.getNombrePagador());
                 domiciliacion.setRefContrato(formDomiciliacion.getRefContrato());
                 domiciliacion.setTipoOperacion(formDomiciliacion.getTipoOperacion());
+                
+                if(formDomiciliacion.getMonto().contains("E")){
+                   formDomiciliacion.setMonto(BigDecimal.valueOf(Double.valueOf(formDomiciliacion.getMonto())).toString());
+                } 
                 domiciliacion.setMonto(formDomiciliacion.getMonto());
                 for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
                     if (obj.getSituacion().equalsIgnoreCase("P") && obj.getContrato().trim().equals(domiciliacion.getRefContrato().trim())) {
@@ -775,22 +779,33 @@ public class UploadController {
         idDomi++;
         Long tRegis = 0L;
         Double tMontos = 0D;
+        BigDecimal tMonto = BigDecimal.ZERO;
+        BigDecimal monto = BigDecimal.ZERO;
         domiciliacion.setId(idDomi);
         listFormDomiciliacion.add(domiciliacion);
-        DecimalFormat formateador = new DecimalFormat("0.00");
+        DecimalFormat formateador = new DecimalFormat("#,###.00");
+        DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(0);
         for (FormDomiciliacion formDomiciliacion : listFormDomiciliacion) {
             tRegis++;
             String motoRegistro = formDomiciliacion.getMonto();
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
-            motoRegistroAux = motoRegistroAux + "." + a[1];
+            if(a.length > 1){
+               motoRegistroAux = motoRegistroAux + "." + a[1]; 
+            }else{
+                motoRegistroAux = motoRegistroAux + "." + "00";
+                formDomiciliacion.setMonto(a[0] + "," + "00");
+            }
             tMontos = tMontos + Double.parseDouble(motoRegistroAux);
+            monto = new BigDecimal(motoRegistroAux);
+            tMonto = tMonto.add(monto);
         }
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        respuesta.setTotalMontosString(formateador.format(tMontos).replace(",", "."));
+        respuesta.setTotalMontosString(formateador.format(tMonto));
         return respuesta;
     }
 
@@ -984,20 +999,29 @@ public class UploadController {
         DomiciliacionRestTempDTO respuesta = new DomiciliacionRestTempDTO();
         Long tRegis = 0L;
         Double tMontos = 0D;
-        DecimalFormat formateador = new DecimalFormat("0.00");
+        DecimalFormat formateador = new DecimalFormat("#,###.00");
+        BigDecimal tMonto = BigDecimal.ZERO;
+        BigDecimal monto = BigDecimal.ZERO;
         for (FormDomiciliacion formDomiciliacion : this.listFormDomiciliacion) {
             tRegis++;
             String motoRegistro = formDomiciliacion.getMonto();
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
-            motoRegistroAux = motoRegistroAux + "." + a[1];
+            if(a.length > 1){
+               motoRegistroAux = motoRegistroAux + "." + a[1]; 
+            }else{
+                motoRegistroAux = motoRegistroAux + "." + "00";
+                formDomiciliacion.setMonto(a[0] + "," + "00");
+            }
             tMontos = tMontos + Double.parseDouble(motoRegistroAux);
+            monto = new BigDecimal(motoRegistroAux);
+            tMonto = tMonto.add(monto);
         }
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        respuesta.setTotalMontosString(formateador.format(tMontos).replace(",", "."));
+        respuesta.setTotalMontosString(formateador.format(tMonto));
         return respuesta;
     }
 

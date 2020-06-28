@@ -5,7 +5,7 @@ $(document).ready(function () {
     $("#manualDomiciliacion").hide();
     $("#alert-suc").hide();
     $("#alert-dan").hide();
-    $("#montoDomi").mask('000.000.000.000.000,00', {reverse: true});
+    $("#montoDomi").mask('0.000.000.000.000,00', {reverse: true});
     $("#lbeTmonto").mask('000.000.000.000.000,00', {reverse: true});
 
     getFechaHoy();
@@ -108,8 +108,7 @@ $(document).ready(function () {
                         });
                         if (data.numRegistros != 0) {
                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
-
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
                         } else {
                             document.getElementById('lbeTregs').innerHTML = '' + data.numRegistros;
                             document.getElementById('lbeTmonto').innerHTML = '' + formatter.format(data.totalMontosString);
@@ -234,8 +233,8 @@ $(document).ready(function () {
                                 $("#tableRegIndividualDomic").append(tds);
                         });
                         if (data.numRegistros != 0) {
-                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
+                            document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
                         }
 
                 },
