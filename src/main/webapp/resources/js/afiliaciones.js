@@ -53,21 +53,20 @@ $(document).ready(function () {
                 $("#panelPpalAfil").hide();
                 $("#alert-error-file").hide();
                 $("#logo2").show();
-
-
                 break;
             case '2':
                 $("#masivoAfiliacion").hide();
                 $("#manual-afiliacion").show();
                 $("#panelPpalAfil").hide();
+                $("#btn-1").hide();
+                $("#btn-2").hide();
+                $("#btn-3").hide();
                 $("#alert-error-file").hide();
                 $("#logo1").hide();
                 $("#logo2").show();
-                clearCargaAfiDom();
                 break;
 
             default:
-                $("#panelPpalAfil").show();
                 $("#masivoAfiliacion").hide();
                 $("#manual-afiliacion").hide();
         }

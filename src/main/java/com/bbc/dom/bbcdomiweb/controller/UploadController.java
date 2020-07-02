@@ -140,9 +140,9 @@ public class UploadController {
     private SumarioCargaMasivaDTO sumAfiliaMasive;
     private String codigoOrdenante = "99999";
     private Boolean FlagArchivo = Boolean.TRUE;
-    private String idUser  = "";
-    private String codUser  = "";
-    private String ipClient  = "";
+    private String idUser = "";
+    private String codUser = "";
+    private String ipClient = "";
 
     private int id = 0;
     private int idDomi = 0;
@@ -298,10 +298,10 @@ public class UploadController {
                 domiciliacion.setNombrePagador(formDomiciliacion.getNombrePagador());
                 domiciliacion.setRefContrato(formDomiciliacion.getRefContrato());
                 domiciliacion.setTipoOperacion(formDomiciliacion.getTipoOperacion());
-                
-                if(formDomiciliacion.getMonto().contains("E")){
-                   formDomiciliacion.setMonto(BigDecimal.valueOf(Double.valueOf(formDomiciliacion.getMonto())).toString());
-                } 
+
+                if (formDomiciliacion.getMonto().contains("E")) {
+                    formDomiciliacion.setMonto(BigDecimal.valueOf(Double.valueOf(formDomiciliacion.getMonto())).toString());
+                }
                 domiciliacion.setMonto(formDomiciliacion.getMonto());
                 for (DetalleAfiliacionesDTO obj : mgDetalleAfiliacionesDTO) {
                     if (obj.getSituacion().equalsIgnoreCase("P") && obj.getContrato().trim().equals(domiciliacion.getRefContrato().trim())) {
@@ -460,15 +460,18 @@ public class UploadController {
                 String link10 = ("" + q.getCell(10)).trim();
                 String link11 = ("" + q.getCell(11)).trim();
                 String link12 = ("" + q.getCell(12)).trim();
-                
-                if(link5.contains("E")){
-                   link5 = BigDecimal.valueOf(Double.valueOf(link5)).toString();
-                } 
+
+                if (link5.contains("E")) {
+                    DecimalFormat formateador2 = new DecimalFormat("###.00");
+                    BigDecimal monto5 = BigDecimal.ZERO;
+                    monto5 = new BigDecimal(link5);
+                    link5 = formateador2.format(monto5);
+                }
                 link5 = link5.replace(",", ".");
                 String[] mo = link5.split("\\.");
                 String montoValor = link5.replace(".", "");
-                if(mo.length == 2){
-                    if(mo[1].length() < 2){
+                if (mo.length == 2) {
+                    if (mo[1].length() < 2) {
                         montoValor = montoValor + "0";
                     }
                 }
@@ -554,14 +557,13 @@ public class UploadController {
 
                     filaNum++;
                     int longitud = link5.trim().length();
-                    total = total + Integer.valueOf(mo[0]);
-                    if(mo.length == 2){
+                   // total = total + Integer.valueOf(mo[0]);
+                    if (mo.length == 2) {
                         montoIndividual = formateador.format(Double.valueOf(mo[0] + "." + mo[1]));
-                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", ".")); 
-                    }
-                    else{
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));
+                    } else {
                         montoIndividual = formateador.format(Double.valueOf(mo[0].substring(0, (mo[0].length() - 2)) + "." + mo[0].substring((mo[0].length() - 2), mo[0].length())));
-                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));                        
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));
                     }
                 }
             }
@@ -621,7 +623,7 @@ public class UploadController {
                 String link2 = linkCel2.getStringCellValue().trim();
                 String link3 = linkCel3.getStringCellValue().trim();
                 String link4 = linkCel4.getStringCellValue().trim();
-           //     String link5 = linkCel5.getStringCellValue().trim();
+                //     String link5 = linkCel5.getStringCellValue().trim();
                 String link5 = linkCel5.toString().trim();
                 String link6 = linkCel6.getStringCellValue().trim();
                 String link7 = linkCel7.getStringCellValue().trim();
@@ -630,15 +632,18 @@ public class UploadController {
                 String link10 = linkCel10.getStringCellValue().trim();
                 String link11 = linkCel11.getStringCellValue().trim();
                 String link12 = linkCel12.getStringCellValue().trim();
-                
-                if(link5.contains("E")){
-                   link5 = BigDecimal.valueOf(Double.valueOf(link5)).toString();
-                }                        
+
+                if (link5.contains("E")) {
+                    DecimalFormat formateador2 = new DecimalFormat("###.00");
+                    BigDecimal monto5 = BigDecimal.ZERO;
+                    monto5 = new BigDecimal(link5);
+                    link5 = formateador2.format(monto5);
+                }
                 link5 = link5.replace(",", ".");
                 String[] mo = link5.split("\\.");
                 String montoValor = link5.replace(".", "");
-                if(mo.length == 2){
-                    if(mo[1].length() < 2){
+                if (mo.length == 2) {
+                    if (mo[1].length() < 2) {
                         montoValor = montoValor + "0";
                     }
                 }
@@ -726,15 +731,14 @@ public class UploadController {
                     tregisTotal++;
                     filaNum++;
                     int longitud = link5.trim().length();
-                    total = total + Integer.valueOf(mo[0]);
-                    if(mo.length == 2){
+                    // total = total + Integer.valueOf(mo[0]);
+                    if (mo.length == 2) {
                         montoIndividual = formateador.format(Double.valueOf(mo[0] + "." + mo[1]));
-                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", ".")); 
-                    }
-                    else{
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));
+                    } else {
                         montoIndividual = formateador.format(Double.valueOf(mo[0].substring(0, (mo[0].length() - 2)) + "." + mo[0].substring((mo[0].length() - 2), mo[0].length())));
-                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));                        
-                    }                    
+                        totalProcesado = totalProcesado + Double.valueOf(montoIndividual.replace(",", "."));
+                    }
                 }
             }
 
@@ -783,7 +787,7 @@ public class UploadController {
         BigDecimal monto = BigDecimal.ZERO;
         domiciliacion.setId(idDomi);
         listFormDomiciliacion.add(domiciliacion);
-        DecimalFormat formateador = new DecimalFormat("#,###.00");
+        DecimalFormat formateador = new DecimalFormat("###.00");
         DecimalFormat df = new DecimalFormat("#");
         df.setMaximumFractionDigits(0);
         for (FormDomiciliacion formDomiciliacion : listFormDomiciliacion) {
@@ -792,9 +796,9 @@ public class UploadController {
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
-            if(a.length > 1){
-               motoRegistroAux = motoRegistroAux + "." + a[1]; 
-            }else{
+            if (a.length > 1) {
+                motoRegistroAux = motoRegistroAux + "." + a[1];
+            } else {
                 motoRegistroAux = motoRegistroAux + "." + "00";
                 formDomiciliacion.setMonto(a[0] + "," + "00");
             }
@@ -805,7 +809,7 @@ public class UploadController {
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        respuesta.setTotalMontosString(formateador.format(tMonto));
+        respuesta.setTotalMontosString(tMonto.toString());
         return respuesta;
     }
 
@@ -927,11 +931,11 @@ public class UploadController {
         return mv;
 
     }
-    
+
     @RequestMapping(value = "/homeDashboard", method = RequestMethod.GET)
     public ModelAndView redirectHome(@RequestParam("codOr") String codOr, @RequestParam("field") String field) {
         ModelAndView mv = new ModelAndView();
-        String semilla  = field;
+        String semilla = field;
         this.codigoOrdenante = codOr.substring(0, 4);
         this.ipClient = codOr.substring(4, codOr.length());
         this.ipClient = desencriptacionDao.desencrypIp(this.ipClient);
@@ -1008,9 +1012,9 @@ public class UploadController {
             String motoRegistroAux = "";
             String[] a = motoRegistro.split(",");
             motoRegistroAux = a[0].replace(".", "");
-            if(a.length > 1){
-               motoRegistroAux = motoRegistroAux + "." + a[1]; 
-            }else{
+            if (a.length > 1) {
+                motoRegistroAux = motoRegistroAux + "." + a[1];
+            } else {
                 motoRegistroAux = motoRegistroAux + "." + "00";
                 formDomiciliacion.setMonto(a[0] + "," + "00");
             }
@@ -1021,7 +1025,7 @@ public class UploadController {
         respuesta.setList(listFormDomiciliacion);
         respuesta.setNumRegistros(tRegis);
         respuesta.setTotalMontos(tMontos);
-        respuesta.setTotalMontosString(formateador.format(tMonto));
+        respuesta.setTotalMontosString(tMonto.toString());
         return respuesta;
     }
 
@@ -1183,12 +1187,22 @@ public class UploadController {
     @ResponseBody
     public SumarioCargaMasivaDTO getSumarioDomicMasiva() {
         DecimalFormat formateador = new DecimalFormat("0.00");
+        DecimalFormat formateador2 = new DecimalFormat("###.00");
+        BigDecimal tMonto = BigDecimal.ZERO;
+        BigDecimal montoB = BigDecimal.ZERO;
         String as = this.sumAfiliaMasive.getMontoTotalProcesado().toString();
-        String monto[] = this.sumAfiliaMasive.getMontoTotalProcesado().toString().split("\\.");
-        as = as.replaceAll("[,.]", "");
+        if (as.contains("E")) {
+            BigDecimal monto5 = BigDecimal.ZERO;
+            monto5 = new BigDecimal(as);
+            as = formateador2.format(monto5);
+            as = as.replace(",", ".");
+        }
+        String monto[] = as.split("\\.");
         String m = monto[0] + "." + monto[1];
         Double mon = Double.valueOf(m);
-        this.sumAfiliaMasive.setMontoTotal(formateador.format(mon).replace(",", "."));
+        montoB = new BigDecimal(m);
+        tMonto = tMonto.add(montoB);
+        this.sumAfiliaMasive.setMontoTotal(tMonto.toString());
         return this.sumAfiliaMasive;
     }
 
@@ -1365,7 +1379,7 @@ public class UploadController {
                     listIbAfiliacionesDet.add(newAfi);
                 }
             }
-           // listIbAfiliacionesDet.addAll(listIbAfiliacionesDetError);
+            // listIbAfiliacionesDet.addAll(listIbAfiliacionesDetError);
             this.sumAfiliaMasive = new SumarioCargaMasivaDTO();
             sumAfiliaMasive.setFechaCargaArchivo(new Date());
             sumAfiliaMasive.setFechaString(getFechaMod(new Date()));
@@ -1736,7 +1750,7 @@ public class UploadController {
                                     sw = false;
                                     newDom.setStatus(validado.getStatusRegistro());
                                     newDom.setErrorInLine(validado.getErrores());
-                                    
+
                                     String as = newDom.getMonto().trim();
                                     montoIndividual = formateador.format(Double.valueOf(as.substring(0, (as.length() - 2)) + "." + as.substring((as.length() - 2), as.length())));
 

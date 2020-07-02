@@ -108,7 +108,7 @@ $(document).ready(function () {
                         });
                         if (data.numRegistros != 0) {
                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
                         } else {
                             document.getElementById('lbeTregs').innerHTML = '' + data.numRegistros;
                             document.getElementById('lbeTmonto').innerHTML = '' + formatter.format(data.totalMontosString);
@@ -234,7 +234,7 @@ $(document).ready(function () {
                         });
                         if (data.numRegistros != 0) {
                             document.getElementById('lbeTregs').innerHTML = 'Total Registros : ' + data.numRegistros;
-                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + data.totalMontosString;
+                            document.getElementById('lbeTmonto').innerHTML = 'Total monto : ' + formatter.format(data.totalMontosString);
                         }
 
                 },
