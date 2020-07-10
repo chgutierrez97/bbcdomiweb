@@ -1528,7 +1528,6 @@ public class UploadController {
                         if (operacion.equals("DO")) {
                             this.ErrorMensajeArch = "Ya existe cargado un archivo con el mismo nombre , revise e intente de nuevo";
                         } else {
-                            // this.ErrorMensajeArch = ErrorMensajeArch + " la carga del archivo no puedes ser procesado inténtelo mas tarde o el siguiente día hábil Bancario ";
                             this.ErrorMensajeArch = "Ya existe cargado un archivo con el mismo nombre , revise e intente de nuevo";
                         }
                     }
@@ -1610,9 +1609,8 @@ public class UploadController {
                         }
                         // se  crea el la path para el archivo temporal 
                         String dirDestino = rutaCarpeta + new Date().getTime() + "-" + file.getOriginalFilename();
-                        //Path path = Paths.get(directorioRaiz+"\\" + file.getOriginalFilename());
                         Path path = Paths.get(dirDestino);
-                        // Crea e;l archivo ebn el directorio
+                        // Crea el archivo en el directorio
                         Files.write(path, bytes);
                         if (this.operationName.equals("AF")) {
                             uploadExelAfiliacion2(dirDestino);

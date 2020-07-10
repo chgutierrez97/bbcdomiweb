@@ -41,7 +41,7 @@ public class ValidatorCargaDomiciliaciones {
 
             //Longitud del detalle        
             if (domiciliaciones.getLinea().length() > LONGITUD_DOM_DE_LINEA) {
-                errorInLine.append("Registro no cumple especif. 170 caracteres");
+                errorInLine.append("Registro no cumple especif. 170 caracteres ");
                 flag = Boolean.FALSE;
                 nroRechazo = "212";
             }
@@ -57,7 +57,6 @@ public class ValidatorCargaDomiciliaciones {
                 errorInLine.append(linea);
                 flag = Boolean.FALSE;
                 nroRechazo = "212";
-
             }
 
             //Banco destino
@@ -65,18 +64,17 @@ public class ValidatorCargaDomiciliaciones {
                 errorInLine.append("La Cta. pagador  no puede contener caracteres alpha numericos ");
                 flag = Boolean.FALSE;
                 nroRechazo = "212";
-
             }
 
             if (BancosEnum.getById(Integer.valueOf(domiciliaciones.getCtaPagador().trim().substring(0, 4))) == null) {
                 flag = Boolean.FALSE;
-                errorInLine.append("El codigo Banco no corresponde con bancos registrados. ");
+                errorInLine.append("El codigo Banco no corresponde con bancos registrados ");
                 nroRechazo = "212";
             }
 
             //Tipo Operacion  
             if (!elementoValidator.validaSoloNumeros(domiciliaciones.getTipoOperacion())) {
-                errorInLine.append("Campo Tipo de Operacion  que no aplica formato");
+                errorInLine.append("Campo Tipo de Operacion  que no aplica formato ");
                 flag = Boolean.FALSE;
                 nroRechazo = "212";
             }
@@ -89,33 +87,34 @@ public class ValidatorCargaDomiciliaciones {
 
             //Tipo Pagador          
             if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getTipoPagador(), "NRJG")) {
-                errorInLine.append("Campo Tipo Pagador que no aplica formato");
+                errorInLine.append("Campo Tipo Pagador que no aplica formato ");
                 flag = Boolean.FALSE;
                 nroRechazo = "212";
             }
+            
             //Detalle tipo pagador
             String resultadoValidatorTipoPagador = domiciliaciones.getTipoPagador();
             if (resultadoValidatorTipoPagador.contains("N")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "VEP")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato ");
                     flag = Boolean.FALSE;
                     nroRechazo = "500";
                 }
             } else if (resultadoValidatorTipoPagador.contains("R")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "VE")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador natural que no aplica formato ");
                     flag = Boolean.FALSE;
                     nroRechazo = "212";
                 }
             } else if (resultadoValidatorTipoPagador.contains("J")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "J") && !elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "G")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador Juridico que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador Juridico que no aplica formato ");
                     flag = Boolean.FALSE;
                     nroRechazo = "212";
                 }
             } else if (resultadoValidatorTipoPagador.contains("G")) {
                 if (!elementoValidator.validaSolaUnaDeEstasLetras(domiciliaciones.getIdentificadorPagador().substring(0, 1), "G")) {
-                    errorInLine.append("Campo Detalle Tipo Pagador Gubernamental que no aplica formato");
+                    errorInLine.append("Campo Detalle Tipo Pagador Gubernamental que no aplica formato ");
                     flag = Boolean.FALSE;
                 }
             }
@@ -123,19 +122,19 @@ public class ValidatorCargaDomiciliaciones {
             //numero identificacion pagador
             if (!elementoValidator.validaSoloNumeros(domiciliaciones.getIdentificadorPagador().substring(1, (domiciliaciones.getIdentificadorPagador().length() - 1)).trim())) {
                 flag = Boolean.FALSE;
-                errorInLine.append("Campo Detalle Nro. identificador Pagador  no aplica formato");
+                errorInLine.append("Campo Detalle Nro. identificador Pagador  no aplica formato ");
                 nroRechazo = "212";
             }
 
             if (!elementoValidator.validaSoloNumeros(domiciliaciones.getCtaPagador())) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Cta.Pagador posee caracteres alpha numericos");
+                errorInLine.append("La Cta.Pagador posee caracteres alpha numericos ");
                 nroRechazo = "212";
             }
 
             if (domiciliaciones.getCtaPagador().length() != LONGITUD_DETALLE_DOM_CUENTA_PAGADOR) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Cta. tiene una longitud diferente a la establecida de 20 digitos");
+                errorInLine.append("La Cta. tiene una longitud diferente a la establecida de 20 digitos ");
                 nroRechazo = "212";
             }
 
@@ -147,14 +146,14 @@ public class ValidatorCargaDomiciliaciones {
             if (!(domiciliaciones.getNombrePagador().length() <= LONGITUD_DETALLE_DOM_NOMBRE_PAGADOR)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("EL nombre del pagador tiene una longitud diferente a la establecida de 30 caracteres");
+                errorInLine.append("EL nombre del pagador tiene una longitud diferente a la establecida de 30 caracteres ");
                 nroRechazo = "212";
 
             }
             if (!(domiciliaciones.getNombrePagador().length() > 5)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("EL nombre del pagador debe ser mayor a 5 caracteres");
+                errorInLine.append("EL nombre del pagador debe ser mayor a 5 caracteres ");
                 nroRechazo = "212";
             }
 
@@ -162,12 +161,24 @@ public class ValidatorCargaDomiciliaciones {
             if (!(domiciliaciones.getRefContrato().length() <= LONGITUD_DETALLE_REFERENCIA_CONTRATO)) {
                 flag = Boolean.FALSE;
                 valida.setLinea(Boolean.FALSE);
-                errorInLine.append("La Ref. Contrato tiene una longitud diferente a la establecida de " + LONGITUD_DETALLE_REFERENCIA_CONTRATO + "caracteres");
+                errorInLine.append("La Ref. Contrato tiene una longitud diferente a la establecida de " + LONGITUD_DETALLE_REFERENCIA_CONTRATO + "caracteres ");
                 nroRechazo = "212";
             }
             if (!elementoValidator.validaAlfaNumerico(domiciliaciones.getRefContrato())) {
                 flag = Boolean.FALSE;
-                errorInLine.append("La Ref. Contrato posee caracteres incorrectos");
+                errorInLine.append("La Ref. Contrato posee caracteres incorrectos ");
+                nroRechazo = "212";
+            }
+            
+            //validar fecha
+            if(!elementoValidator.validaFecha(domiciliaciones.getFechaEmisionFactura(), "ddMMyyyy")){
+                flag = Boolean.FALSE;
+                errorInLine.append("La fecha de emision no cumple con el formato ddMMyyyy ");
+                nroRechazo = "212";
+            }
+            if(!elementoValidator.validaFecha(domiciliaciones.getFechaVencimientoFactura(), "ddMMyyyy")){
+                flag = Boolean.FALSE;
+                errorInLine.append("La fecha de vencimiento no cumple con el formato ddMMyyyy ");
                 nroRechazo = "212";
             }
         } catch (Exception e) {

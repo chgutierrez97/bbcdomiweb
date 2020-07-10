@@ -89,7 +89,7 @@ $(document).ready(function () {
                         $("#alertaSumario").removeClass("alert-warning");
                         $("#alertaSumario").addClass("alert-danger");
                         $('#alertaSumario').show();
-                        $("#alertaSumario").html("<strong> Nota: </strong>El contenido total del archivo contiene errores no se puede procesar. favor verificar su informacion <br>");
+                        $("#alertaSumario").html("<strong> Nota: </strong>El archivo contiene errores de formato. Revise y realice la carga nuevamente. <br>");
                         
                     }else if(data.numRegValidados>0 && (data.numRegValidados!=data.numRegProcesados)){
                          $('#alertaSumario').show();

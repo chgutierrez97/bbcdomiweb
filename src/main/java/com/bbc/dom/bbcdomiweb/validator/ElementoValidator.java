@@ -78,7 +78,6 @@ public class ElementoValidator {
      * @return
      */
     public boolean validaAlfanumericoPuntoComa(String texto) {
-        //return texto.replaceAll(" ", "").matches("[a-zA-Z0-9ÁÉÍÓÚáéíóúÑñ.,]+");
         return texto.replaceAll(" ", "").matches("[a-zA-Z0-9ÁÉÍÓÚáéíóúÑñ]+");
     }
     
@@ -158,14 +157,8 @@ public class ElementoValidator {
             return false;
         }
     }
-
-    /*private String obtenerExtensionArchivo() {
-        String name = this.ibCargaArchivoDto.getFileName();
-        try {
-            return name.substring(name.lastIndexOf(".") + 1).toLowerCase();
-        } catch (Exception e) {
-            return "";
-        }
-    }*/
     
+    public boolean validaFormatoFecha(String texto) {
+        return texto.replaceAll(" ", "").matches("[a-zA-Z]+");
+    }
 }
